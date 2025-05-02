@@ -1,0 +1,564 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "AntiPulse"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 21,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 33,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 24,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"backtrace" : 2,
+					"fragment" : "-fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "G4LIB_BUILD_DLL"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4UI_USE_QT"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4UI_USE_XM"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_OPENGLQT"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_OPENGLX"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_OPENGLXM"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_TOOLSSG_QT_GLES"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_TOOLSSG_QT_ZB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_TOOLSSG_X11_GLES"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_TOOLSSG_XT_GLES"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "G4VIS_USE_TOOLSSG_XT_ZB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "PTL_BUILD_DLL"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_CORE_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_GUI_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_NO_DEBUG"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_OPENGL_LIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "QT_WIDGETS_LIB"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 3,
+					"path" : "/home/piyush/Desktop/PhD_Work/Trento_Project/CADMesh/CADMesh-1.1/build/include"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/include/Geant4"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/x86_64-linux-gnu/qt5"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/x86_64-linux-gnu/qt5/QtGui"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/x86_64-linux-gnu/qt5/QtCore"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/x86_64-linux-gnu/qt5/QtOpenGL"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/usr/include/x86_64-linux-gnu/qt5/QtWidgets"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8
+			]
+		}
+	],
+	"id" : "AntiPulse::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib:/home/piyush/Desktop/PhD_Work/Trento_Project/CADMesh/CADMesh-1.1/build",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4Tree.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4FR.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4GMocren.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4visHepRep.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4RayTracer.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4VRML.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4ToolsSG.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4OpenGL.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4vis_management.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4modeling.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4interfaces.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4mctruth.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4geomtext.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4error_propagation.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4readout.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4physicslists.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4run.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4event.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4tracking.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4parmodels.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4processes.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4digits_hits.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4track.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4particles.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4geometry.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4materials.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4graphics_reps.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Trento_Project/CADMesh/CADMesh-1.1/build/libcadmesh.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libXm.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libGL.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5OpenGL.so.5.15.3",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5.15.3",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Gui.so.5.15.3",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libQt5Core.so.5.15.3",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libXmu.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libXext.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libXt.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libICE.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libSM.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libX11.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4analysis.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libexpat.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4zlib.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4intercoms.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4global.so",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4clhep.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/home/piyush/Desktop/PhD_Work/Softwares/geant4-v11.2.1/install/lib/libG4ptl.so.2.3.3",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "AntiPulse",
+	"nameOnDisk" : "AntiPulse",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8
+			]
+		},
+		{
+			"name" : "Header Files",
+			"sourceIndexes" : 
+			[
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "Project_AntiPulse.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "EventAction.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "GeoConstruction.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "PhysicsList.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "PrimaryGenerator.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "RunAction.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "SensitiveDet.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "SteppingAction.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "UserActions.cc",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"path" : "EventAction.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "GeoConstruction.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "PhysicsList.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "PrimaryGenerator.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "RunAction.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "SensitiveDet.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "SteppingAction.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "UserActions.hh",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 1,
+			"path" : "g4root.hh",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}

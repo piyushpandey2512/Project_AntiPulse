@@ -16,6 +16,10 @@
 
 //#include "PrimaryGeneratorAction.hh"
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3ac4172 (Initial fresh commit)
 int main(int argc, char** argv)
 {
 	G4RunManager *runManager = new G4RunManager();
@@ -45,9 +49,12 @@ int main(int argc, char** argv)
 		}
 
 
+<<<<<<< HEAD
 
 // Comment out the following lines to disable visualization
 
+=======
+>>>>>>> 3ac4172 (Initial fresh commit)
 	G4VisManager *visManager = new G4VisExecutive();
 	visManager->Initialize();
 
@@ -57,9 +64,15 @@ int main(int argc, char** argv)
 
 	if(ui)
 		{
+<<<<<<< HEAD
 			UImanager->ApplyCommand("/control/execute /home/piyushp/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/vis.mac");
 			ui->SessionStart();
 			delete ui;  // Clean up UI. If you want to use visuals, comment this out
+=======
+		UImanager->ApplyCommand("/control/execute vis.mac");
+		ui->SessionStart();
+		//delete ui;  // Clean up UI. If you want to use visuals, comment this out
+>>>>>>> 3ac4172 (Initial fresh commit)
 		}
 	else
 		{
@@ -77,5 +90,24 @@ int main(int argc, char** argv)
 
 
 // ********To get the visualization and geant4 interface, comment out the part of codes mentioned below********
+<<<<<<< HEAD
 	// G4VisManager *visManager = new G4VisExecutive();
 	// visManager->Initialize();
+=======
+// G4UIExecutive *ui = 0;
+	// if (argc == 1)
+	// 	{
+	// 	 ui = new G4UIExecutive(argc, argv);
+	// 	}
+
+
+	// G4VisManager *visManager = new G4VisExecutive();
+	// visManager->Initialize();
+
+// if(ui)
+		// {
+		// UImanager->ApplyCommand("/control/execute vis.mac");
+		// ui->SessionStart();
+		// delete ui;  // Clean up UI. If you want to use visuals, comment this out
+		// }
+>>>>>>> 3ac4172 (Initial fresh commit)

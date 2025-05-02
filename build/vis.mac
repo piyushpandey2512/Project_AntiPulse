@@ -1,0 +1,7 @@
+/vis/open OGL 600x600-0+0
+/vis/drawVolume
+/vis/viewer/set/autoRefresh true
+/vis/scene/add/trajectories smooth
+/vis/viewer/set/style wireframe
+#/vis/scene/add/axes 0 0 0 1 m
+# /vis/disable

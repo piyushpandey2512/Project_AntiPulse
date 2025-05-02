@@ -1,0 +1,30 @@
+#include "PrimaryGenerator.hh"
+
+MyPrimaryParticles::MyPrimaryParticles()
+{
+	fParticleGun = new G4ParticleGun(1);
+}
+
+MyPrimaryParticles::~MyPrimaryParticles()
+{
+	delete fParticleGun;
+}
+
+void MyPrimaryParticles::GeneratePrimaries(G4Event *anEvent)
+{
+	G4ParticleTable *ParticleTable = G4ParticleTable::GetParticleTable();
+        G4String nameOfParticle = "gamma";
+        G4ParticleDefinition *particleDef = ParticleTable->FindParticle(nameOfParticle);
+        fParticleGun->SetParticleDefinition(particleDef);
+
+	// Set properties
+	G4ThreeVector position(-1.*m,0.,0.);
+	G4ThreeVector momentum(1.,0.,0.);
+
+	fParticleGun->SetParticlePosition(position);
+	fParticleGun->SetParticleMomentumDirection(momentum);
+	fParticleGun->SetParticleMomentum(0.200*MeV);
+        fParticleGun->SetParticleDefinition(particleDef);
+	fParticleGun->GeneratePrimaryVertex(anEvent);
+
+}

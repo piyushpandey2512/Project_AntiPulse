@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /control/verbose 2
 /run/verbose 2
 /event/verbose 2
@@ -10,3 +11,13 @@
 
 # Set the number of events
 /run/beamOn 1000
+=======
+/control/verbose 1
+/run/verbose 1
+/event/verbose 0
+/tracking/verbose 0
+
+# Set the number of events
+/run/initialize
+/run/beamOn 10000
+>>>>>>> 3ac4172 (Initial fresh commit)

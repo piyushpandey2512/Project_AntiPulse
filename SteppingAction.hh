@@ -3,13 +3,17 @@
 
 #include "G4UserSteppingAction.hh"
 #include "G4Step.hh"
+<<<<<<< HEAD
 
 #include "GeoConstruction.hh"
+=======
+>>>>>>> 3ac4172 (Initial fresh commit)
 #include "EventAction.hh"
 
 class MySteppingAction : public G4UserSteppingAction
 {
 public:
+<<<<<<< HEAD
 	MySteppingAction(MyEventAction *eventAction);
 	~MySteppingAction();
 	
@@ -32,3 +36,17 @@ private:
 };
 
 #endif
+=======
+    MySteppingAction(MyEventAction *eventAction);
+    ~MySteppingAction();
+
+    virtual void UserSteppingAction(const G4Step *);
+
+private:
+    MyEventAction *fEventAction;
+    std::map<G4int, G4ThreeVector> entryPointMap1; // Right-side front
+    std::map<G4int, G4ThreeVector> entryPointMap2; // Left-side front
+};
+
+#endif
+>>>>>>> 3ac4172 (Initial fresh commit)

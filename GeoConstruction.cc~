@@ -1,0 +1,757 @@
+#include "GeoConstruction.hh"
+#include "G4RotationMatrix.hh"
+#include "G4VisAttributes.hh"
+#include <G4Tubs.hh>
+#include <iostream>
+#include <iomanip>
+#include <vector>
+
+
+using namespace std;
+const G4bool checkOverlaps = false;
+
+MyDetectorConstruction::MyDetectorConstruction()
+{}
+
+MyDetectorConstruction::~MyDetectorConstruction()
+{}
+
+G4VPhysicalVolume* MyDetectorConstruction::Construct()
+{
+
+G4NistManager *nist = G4NistManager::Instance();
+
+// Copy numbers of different geometries
+G4int cpn5T                = 1;
+G4int cpn1T                = 2;
+G4int cpnDegrader          = 3;
+G4int cpnBoreHole          = 4;
+G4int cpnPlasticSupport    = 5;
+G4int cpnPrimaryCoil       = 6;
+G4int cpnCorrectionCoil    = 7;
+G4int cpnLHeVessel         = 8;
+G4int cpnInnerLnVessel     = 9;
+G4int cpnOuterLnVessel     = 10;
+G4int cpnOuterCryostetWall = 11;
+
+// General Elements
+
+G4Element* elH = nist->FindOrBuildElement("H");  // Hydrogen
+G4Element* elC = nist->FindOrBuildElement("C");  // Carbon
+G4Element* elO = nist->FindOrBuildElement("O");  // Oxygen
+G4Element* elSi = nist->FindOrBuildElement("Si"); // Silicon
+G4Element* elMn = nist->FindOrBuildElement("Mn"); // Manganese
+G4Element* elCr = nist->FindOrBuildElement("Cr"); // Chromium
+G4Element* elNi = nist->FindOrBuildElement("Ni"); // Nickel
+G4Element* elFe = nist->FindOrBuildElement("Fe"); // Iron
+
+// Use Nist data base:
+
+G4Material *volMatWorld    = nist->FindOrBuildMaterial("G4_AIR");
+G4Material *volMatDetector = nist->FindOrBuildMaterial("G4_BGO");
+G4Material *Al             = nist->FindOrBuildMaterial("G4_Al");
+G4Material* Gal_mat        = nist->FindOrBuildMaterial("G4_Galactic");
+G4Material* Mo             = nist->FindOrBuildMaterial("G4_Mo");
+
+
+//Define Stainless-steel-304 - Flexi source 
+G4double d = 7.999*g/cm3 ;
+G4Material* mat304steel = new G4Material("Stainless steel 304",d,6);
+mat304steel->AddElement(elMn, 0.02);
+mat304steel->AddElement(elSi, 0.01);
+mat304steel->AddElement(elCr, 0.19);
+mat304steel->AddElement(elNi, 0.10);
+mat304steel->AddElement(elFe, 0.6792);
+mat304steel->AddElement(elC, 0.0008);
+
+// Define Plastic support material which is G-10 fibreglass in resin. It is 60% fibreglass(SiO2) and 40% epozt resin by weight
+
+// Define Epoxy (C21H25O5, approximate composition)
+G4Material* Epoxy = new G4Material("Epoxy", 1.2 * g / cm3, 3);
+Epoxy->AddElement(elC, 21);
+Epoxy->AddElement(elH, 25);
+Epoxy->AddElement(elO, 5);
+
+// Define Fiberglass (SiO2)
+G4Material* Fiberglass = nist->FindOrBuildMaterial("G4_SILICON_DIOXIDE");
+
+// Define G10 composite (60% fiberglass, 40% epoxy by weight)
+G4Material* G10 = new G4Material("G10", 1.9 * g / cm3, 2);
+G10->AddMaterial(Fiberglass, 0.6); // 60% by weight
+G10->AddMaterial(Epoxy, 0.4);     // 40% by weight
+
+
+
+// Color definition
+
+G4VisAttributes* white = new G4VisAttributes(G4Colour(1.0, 1.0, 1.0));
+G4VisAttributes* gray = new G4VisAttributes(G4Colour(.5, 0.5, 0.5));
+G4VisAttributes* black = new G4VisAttributes(G4Colour(0.0, 0.0, 0.0));
+G4VisAttributes* red = new G4VisAttributes(G4Colour(1.0, 0.0, 0.0));
+G4VisAttributes* green = new G4VisAttributes(G4Colour(0.0, 1.0, 0.0));
+G4VisAttributes* blue = new G4VisAttributes(G4Colour(0.0, 0.0, 1.0));
+G4VisAttributes* cyan = new G4VisAttributes(G4Colour(0.0, 1.0, 1.0));
+G4VisAttributes* magenta = new G4VisAttributes(G4Colour(1.0, 0.0, 1.0));
+G4VisAttributes* yellow = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
+
+
+/*********Code for the AEgIS Beamline*********/
+
+// World
+  G4double wRadius = 300*cm;
+  G4double wLength = 530*cm;
+  G4String wName = "World";
+
+  G4VSolid* wSolid = new G4Tubs(wName,
+              0,
+              wRadius,
+              wLength/2,
+              0,
+              360);
+
+  G4Material* wMaterial = nist->FindOrBuildMaterial("G4_GALACTIC");
+
+  G4LogicalVolume* wLogic =                         
+    new G4LogicalVolume(wSolid,          //its solid
+                        Gal_mat,           //its material
+                        "World");            //its name
+
+  G4bool checkOverlaps = true;
+  G4VPhysicalVolume* physWorld = 
+  new G4PVPlacement(0,                     //no rotation
+                      G4ThreeVector(),       //at (0,0,0)
+                      wLogic,            //its logical volume
+                      "World",               //its name
+                      0,                     //its mother  volume
+                      false,                 //no boolean operation
+                      0,                     //copy number
+                      checkOverlaps);        //overlaps checking
+    
+    G4double geometry_offset = 36.06*mm;
+
+
+    // 5T Trap
+    G4double s5TTrapRadiusInner = 15*mm;
+    G4double s5TTrapRadiusOuter = 19*mm;
+    G4double s5TTrapLength = 1051.50*mm;
+    G4double s5TtrapDistanceToCenter = 61.36*mm;
+    G4VSolid* s5TTrapSolid = new G4Tubs("s5TTrap",
+              s5TTrapRadiusInner,
+              s5TTrapRadiusOuter,
+              s5TTrapLength/2,
+              0,
+              360);
+
+    G4Material* m5TTrapMaterial = G4Material::GetMaterial("Stainless steel 304");
+
+    G4LogicalVolume* l5TTrapLogic =                         
+    new G4LogicalVolume(s5TTrapSolid,          //its solid
+                        m5TTrapMaterial,       //its material
+                        "l5TTrap");       //its name
+
+    l5TTrapLogic->SetVisAttributes(red);
+    red->SetForceWireframe(true);
+    red->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,-s5TtrapDistanceToCenter-(s5TTrapLength/2)+geometry_offset),         //at (0,0,0)
+                    l5TTrapLogic,                //its logical volume
+                    "p5TTrap",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpn5T,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+    // 1T Trap
+    G4double s1TTrapRadiusInner = 15*mm;
+    G4double s1TTrapRadiusOuter = 17*mm;
+    G4double s1TTrapLength = 558.95*mm;
+    G4double s1TtrapDistanceToCenter = 499.59*mm;
+    G4VSolid* s1TTrapSolid = new G4Tubs("s1TTrap",
+              s1TTrapRadiusInner,
+              s1TTrapRadiusOuter,
+              s1TTrapLength/2,
+              0,
+              360);
+
+    G4Material* m1TTrapMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* l1TTrapLogic =                         
+    new G4LogicalVolume(s1TTrapSolid,          //its solid
+                        m1TTrapMaterial,       //its material
+                        "l1TTrap");       //its name
+
+        l1TTrapLogic->SetVisAttributes(green);
+        green->SetForceWireframe(true);
+        green->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0, s1TtrapDistanceToCenter - (s1TTrapLength/2)+geometry_offset),         //at (0,0,0)
+                    l1TTrapLogic,                //its logical volume
+                    "p1TTrap",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpn1T,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+  // Degrader
+  G4double sDegraderRadiusOuter = 15*mm;
+  G4double sDegraderLength = 10*mm;
+  G4double sDegraderToCenter = 1136.06*mm;
+    G4VSolid* sDegraderSolid = new G4Tubs("sDegrader",
+              0,
+              sDegraderRadiusOuter,
+              sDegraderLength/2,
+              0,
+              360);
+
+    G4Material* mDegraderMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* lDegraderLogic =                         
+    new G4LogicalVolume(sDegraderSolid,          //its solid
+                        mDegraderMaterial,       //its material
+                        "lDegrader");       //its name
+
+    lDegraderLogic->SetVisAttributes(blue);
+    blue->SetForceWireframe(true);
+    blue->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,-sDegraderToCenter+(sDegraderLength/2)+geometry_offset),         //at (0,0,0)
+                    lDegraderLogic,                //its logical volume
+                    "pDegrader",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnDegrader,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  // Borehole
+  G4double sBoreholeRadiusInner = 77*mm;
+  G4double sBoreholeRadiusOuter = 79*mm;
+  G4double sBoreholeLength = 3000*mm;
+    G4VSolid* sBoreholeSolid = new G4Tubs("sDegrader",
+              sBoreholeRadiusInner,
+              sBoreholeRadiusOuter,
+              sBoreholeLength/2,
+              0,
+              360);
+
+    G4Material* mBoreholeMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* lBoreholeLogic =                         
+    new G4LogicalVolume(sBoreholeSolid,          //its solid
+                        mBoreholeMaterial,       //its material
+                        "lBorehole");       //its name
+
+    lBoreholeLogic->SetVisAttributes(yellow);
+    yellow->SetForceWireframe(true);
+    yellow->SetForceSolid(true);
+
+    
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lBoreholeLogic,                //its logical volume
+                    "pBorehole",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnBoreHole,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  // Plastic support 
+
+  G4double sPlasticSupportInner = 79*mm;
+  G4double sPlasticSupportOuter = 89*mm;
+  G4double sPlasticSupportLength = 3000*mm;
+  G4VSolid* sPlasticSupportSolid = new G4Tubs("sPlasticSupport",
+              sPlasticSupportInner,
+              sPlasticSupportOuter,
+              sPlasticSupportLength/2,
+              0,
+              360);
+
+    G4Material* mPlasticSupportMaterial = nist->FindOrBuildMaterial("G10");
+
+    G4LogicalVolume* lPlasticSupport =                         
+    new G4LogicalVolume(sPlasticSupportSolid,          //its solid
+                        mPlasticSupportMaterial,       //its material
+                        "lPlasticSupport");       //its name
+
+    lPlasticSupport->SetVisAttributes(white);
+    white->SetForceWireframe(true);
+    white->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lPlasticSupport,                //its logical volume
+                    "pPlasticSupport",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnPlasticSupport,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+   // Primary Coild 
+  G4double sPrimaryCoilInner = 89*mm;
+  G4double sPrimaryCoilOuter = 113*mm;
+  G4double sPrimaryCoilLength = 3000*mm;
+  G4VSolid* sPrimaryCoilSolid = new G4Tubs("sPrimaryCoil",
+              sPrimaryCoilInner,
+              sPrimaryCoilOuter,
+              sPrimaryCoilLength/2,
+              0,
+              360);
+
+    G4Material* mPrimaryCoilMaterial = nist->FindOrBuildMaterial("G4_Cu");
+
+    G4LogicalVolume* lPrimaryCoil =                         
+    new G4LogicalVolume(sPrimaryCoilSolid,          //its solid
+                        mPrimaryCoilMaterial,       //its material
+                        "lPrimaryCoil");       //its name
+
+    lPrimaryCoil->SetVisAttributes(yellow);
+    yellow->SetForceWireframe(true);
+    yellow->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lPrimaryCoil,                //its logical volume
+                    "pPrimaryCoil",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    0,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+  // Correction Coil 
+  G4double sCorrectionCoilInner = 145*mm;
+  G4double sCorrectionCoilOuter = 170*mm;
+  G4double sCorrectionCoilLength = 3000*mm;
+  G4VSolid* sCorrectionCoilSolid = new G4Tubs("sCorrectionCoil",
+              sCorrectionCoilInner,
+              sCorrectionCoilOuter,
+              sCorrectionCoilLength/2,
+              0,
+              360);
+
+    G4Material* mCorrectionCoilMaterial = nist->FindOrBuildMaterial("G4_Cu");
+
+    G4LogicalVolume* lCorrectionCoil =                         
+    new G4LogicalVolume(sCorrectionCoilSolid,          //its solid
+                        mCorrectionCoilMaterial,       //its material
+                        "lCorrectionCoil");       //its name
+
+    lCorrectionCoil->SetVisAttributes(green);
+    green->SetForceWireframe(true);
+    green->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lCorrectionCoil,                //its logical volume
+                    "pCorrectionCoil",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnCorrectionCoil,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+   // LHe Vessel 
+  G4double sLHeVesselInner = 450*mm;
+  G4double sLHeVesselOuter = 454*mm;
+  G4double sLHeVesselLength = 3000*mm;
+  G4VSolid* sLHeVesselSolid = new G4Tubs("sLHeVessel",
+              sLHeVesselInner,
+              sLHeVesselOuter,
+              sLHeVesselLength/2,
+              0,
+              360);
+
+    G4Material* mLHeVesselMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* lLHeVessel =                         
+    new G4LogicalVolume(sLHeVesselSolid,          //its solid
+                        mLHeVesselMaterial,       //its material
+                        "lLHeVessel");       //its name
+
+    lLHeVessel->SetVisAttributes(magenta);
+    magenta->SetForceWireframe(true);
+    magenta->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lLHeVessel,                //its logical volume
+                    "pLHeVessel",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnLHeVessel,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  // Inner Ln Vessel
+  G4double silnVesselInner = 476*mm;
+  G4double silnVesselOuter = 478*mm;
+  G4double silnVesselLength = 3000*mm;
+  G4VSolid* silnVesselSolid = new G4Tubs("silnVessel",
+              silnVesselInner,
+              silnVesselOuter,
+              silnVesselLength/2,
+              0,
+              360);
+
+    G4Material* milnVesselMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* lilnVessel =                         
+    new G4LogicalVolume(silnVesselSolid,          //its solid
+                        milnVesselMaterial,       //its material
+                        "lilnVessel");       //its name
+
+    lilnVessel->SetVisAttributes(cyan);
+    cyan->SetForceWireframe(true);
+    cyan->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lilnVessel,                //its logical volume
+                    "pilnVessel",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnInnerLnVessel,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  // Outer Ln Vessel
+  G4double solnVesselInner = 622*mm;
+  G4double solnVesselOuter = 624*mm;
+  G4double solnVesselLength = 3000*mm;
+  G4VSolid* solnVesselSolid = new G4Tubs("solnVessel",
+              solnVesselInner,
+              solnVesselOuter,
+              solnVesselLength/2,
+              0,
+              360);
+
+    G4Material* molnVesselMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* lolnVessel =                         
+    new G4LogicalVolume(solnVesselSolid,          //its solid
+                        molnVesselMaterial,       //its material
+                        "lolnVessel");       //its name
+
+    lolnVessel->SetVisAttributes(blue);
+    blue->SetForceWireframe(true);
+    blue->SetForceSolid(true);
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    lolnVessel,                //its logical volume
+                    "polnVessel",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnOuterLnVessel,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+
+   // Outer oCryostetWall Wall
+  G4double soCryostetWallInner = 650*mm;
+  G4double soCryostetWallOuter = 656*mm;
+  G4double soCryostetWallLength = 3000*mm;
+  G4VSolid* soCryostetWallSolid = new G4Tubs("soCryostetWall",
+              soCryostetWallInner,
+              soCryostetWallOuter,
+              soCryostetWallLength/2,
+              0,
+              360);
+
+    G4Material* moCryostetWallMaterial = nist->FindOrBuildMaterial("Stainless steel 304");
+
+    G4LogicalVolume* loCryostetWall =                         
+    new G4LogicalVolume(soCryostetWallSolid,          //its solid
+                        moCryostetWallMaterial,       //its material
+                        "loCryostetWall");       //its name
+
+    loCryostetWall->SetVisAttributes(red);
+    red->SetForceWireframe(true);
+    red->SetForceSolid(true);
+    
+
+    new G4PVPlacement(0,                       //no rotation
+                    G4ThreeVector(0,0,0),         //at (0,0,0)
+                    loCryostetWall,                //its logical volume
+                    "poCryostetWall",              //its name
+                    wLogic,              //its mother  volume
+                    false,                   //no boolean operation
+                    cpnOuterCryostetWall,                       //copy number
+                    checkOverlaps);          //overlaps checking
+
+  // J-PET detection modules (first layer)
+
+  G4double scinBoxX = 2.5 * cm / 2.0;
+  G4double scinBoxY = 0.6 * cm / 2.0;
+  G4double scinBoxZ = 50.0 * cm / 2.0;
+  
+  G4Box* scinBoxInModule = new G4Box("scinBoxInModule", 
+                        scinBoxX, 
+                        scinBoxY, 
+                        scinBoxZ);
+
+  G4Material* fScinMaterial = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+  G4LogicalVolume* fScinLogInModule = new G4LogicalVolume(
+                                      scinBoxInModule,
+                                      fScinMaterial, 
+                                      "scinBoxInModule");
+  G4VisAttributes* boxVisAttI = new G4VisAttributes(G4Colour(0.105, 0.210, 0.810));
+  boxVisAttI->SetForceWireframe(true);
+  boxVisAttI->SetForceSolid(true);
+  fScinLogInModule->SetVisAttributes(boxVisAttI);
+
+// original radius for modular j-pet
+ /* const G4double radius_24[13] = {          
+    38.416, 38.346, 38.289, 38.244, 38.212, 38.192, 38.186,
+    38.192, 38.212, 38.244, 38.289, 38.346, 38.416
+  }; */
+
+// radius for AEgIS setup
+// (15 + radius of outmost cylinder in AEgIS setup) cm
+const G4double radius_24[13] = {          
+    80.75, 80.71, 80.68, 80.65, 80.63, 80.61, 80.6,
+    80.61, 80.63, 80.65, 80.68, 80.71, 80.75
+  };
+
+std::vector<G4double> radius_dynamic = std::vector<G4double>(13, 0.0);
+
+G4int icopyI = 201;
+// G4double angDisp_24 = 0.01815;      // 1.04^0  (in degree) also original for J-PET
+G4double angDisp_24 = 0.00869;    // for 1st layer in AEgIS setup                                                                                                                                   
+G4double angDisp_dynamic = 0;
+G4int numberofModules = 0;
+G4double phi = 0.0;
+G4double phi1 = 0.0;
+// G4double scinDistFromCentreInZ = 551.05 * mm;   // same as position of 5T trap
+G4double scinDistFromCentreInZ = 0.0;
+
+ for (int i = 0; i < 13; i++) {
+        radius_dynamic[i] = radius_24[i]; // original                                                                                                                                
+        radius_dynamic[i] = radius_24[i]; // for pions/aegis                                                                                                                         
+      }
+    //  numberofModules = 24;                                                                                                                                                         
+     numberofModules = 1;
+     angDisp_dynamic = angDisp_24;
+
+   G4int moduleNumber = 0;
+  for (int i = 0; i < numberofModules; i++){
+    phi = (i * 2 * M_PI / numberofModules);
+    for (int j = -6; j < 7; j++) {
+      phi1 = phi + j * angDisp_dynamic;
+      G4double radius_new = radius_dynamic[j + 6] * cm;
+      G4RotationMatrix rot = G4RotationMatrix();
+      rot.rotateZ(phi);
+      G4ThreeVector loc = G4ThreeVector(radius_new * cos(phi1), radius_new * sin(phi1), scinDistFromCentreInZ);
+      G4Transform3D transform(rot, loc);
+      moduleNumber = icopyI + i * 13 + j + 6;
+      G4String nameNewI = "scin_" + G4UIcommand::ConvertToString(moduleNumber);
+
+      new G4PVPlacement(
+        transform, fScinLogInModule, nameNewI, wLogic,
+        true, icopyI + i * 13 + j + 6, true);
+
+    }
+  }
+
+
+ // J-PET detection modules (second layer)
+
+  G4double scinBoxX_2 = 2.5 * cm / 2.0;
+  G4double scinBoxY_2 = 0.6 * cm / 2.0;
+  G4double scinBoxZ_2 = 50.0 * cm / 2.0;
+  
+  G4Box* scinBoxInModule_2 = new G4Box("scinBoxInModule_2", 
+                        scinBoxX_2, 
+                        scinBoxY_2, 
+                        scinBoxZ_2);
+
+  G4Material* fScinMaterial_2 = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
+  G4LogicalVolume* fScinLogInModule_2 = new G4LogicalVolume(
+                                      scinBoxInModule_2,
+                                      fScinMaterial_2, 
+                                      "scinBoxInModule_2");
+  G4VisAttributes* boxVisAttI_2 = new G4VisAttributes(G4Colour(0.105, 0.210, 0.810));
+  boxVisAttI_2->SetForceWireframe(true);
+  boxVisAttI_2->SetForceSolid(true);
+  fScinLogInModule_2->SetVisAttributes(boxVisAttI_2);
+
+// Second detector setup for AEgIS
+// (37 + previous radius) cm
+
+const G4double radius_24_2[13] = {          
+    90.73, 90.70, 90.67, 90.64, 90.62, 90.61, 90.60,
+    90.61, 90.62, 90.64, 90.67, 90.70, 90.73
+  };
+
+std::vector<G4double> radius_dynamic_2 = std::vector<G4double>(13, 0.0);
+
+G4int icopyI_2 = 220;
+// G4double angDisp_24_2 = 0.01815;      // 1.04^0  (in degree) also original for J-PET
+G4double angDisp_24_2 = 0.00773;    // for 2st layer in AEgIS setup                                                                                                                                     
+G4double angDisp_dynamic_2 = 0;
+G4int numberofModules_2 = 0;
+G4double phi_2 = 0.0;
+G4double phi1_2 = 0.0;
+//G4double scinDistFromCentreInZ_2 = 551.05 * mm;   // same as position of 5T trap
+G4double scinDistFromCentreInZ_2 = 0.0;
+
+  for (int i = 0; i < 13; i++) {
+        radius_dynamic_2[i] = radius_24_2[i]; // original                                                                                                                                
+        radius_dynamic_2[i] = radius_24_2[i]; // for pions/aegis                                                                                                                         
+      }
+    //  numberofModules = 24;                                                                                                                                                         
+     numberofModules_2 = 1;
+     angDisp_dynamic_2 = angDisp_24_2;
+
+   G4int moduleNumber_2 = 0;
+  for (int i = 0; i < numberofModules_2; i++){
+    phi = (i * 2 * M_PI / numberofModules_2);
+    for (int j = -6; j < 7; j++) {
+      phi1_2 = phi_2 + j * angDisp_dynamic_2;
+      G4double radius_new = radius_dynamic_2[j + 6] * cm;
+      G4RotationMatrix rot = G4RotationMatrix();
+      rot.rotateZ(phi);
+      G4ThreeVector loc = G4ThreeVector(radius_new * cos(phi1_2), radius_new * sin(phi1_2), scinDistFromCentreInZ_2);
+      G4Transform3D transform(rot, loc);
+      moduleNumber_2 = icopyI_2 + i * 13 + j + 6;
+      G4String nameNewI_2 = "scin_" + G4UIcommand::ConvertToString(moduleNumber_2);
+
+      new G4PVPlacement(
+        transform, fScinLogInModule, nameNewI_2, wLogic,
+        true, icopyI + i * 13 + j + 6, true);
+
+    }
+  }
+
+
+
+// Create world volume
+
+/*	
+
+G4Box *volWorld = new G4Box("volWorld", 1.*m / 2., 1.*m / 2., 1.*m / 2.);
+
+// fWorldLogical = new G4LogicalVolume(volWorld, volMatWorld, "worldLogical");
+fWorldLogical = new G4LogicalVolume(volWorld, Gal_mat, "worldLogical");
+
+G4VPhysicalVolume *phyWorld = new G4PVPlacement(0, G4ThreeVector(0,0,0),fWorldLogical,"phyWorld",0,false,0,true);
+
+//creating the box of the the scintillators
+
+G4Box* scinBoxInModule = new G4Box("scinBoxInModule", 2.5 * cm / 2.0, 0.6 * cm / 2.0, 50.0 * cm / 2.0);
+fScinLogInModule = new G4LogicalVolume(scinBoxInModule, fScinMaterial, "scinBoxInModule");
+
+G4VisAttributes* boxVisAttI = new G4VisAttributes(G4Colour(0.105, 0.210, 0.810));
+  boxVisAttI->SetForceWireframe(true);
+  //boxVisAttI->SetForceSolid(true);
+  fScinLogInModule->SetVisAttributes(boxVisAttI);
+  
+const G4double radius_24[13] = {
+    38.416, 38.346, 38.289, 38.244, 38.212, 38.192, 38.186,
+    38.192, 38.212, 38.244, 38.289, 38.346, 38.416
+  };
+  
+ std::vector<G4double> radius_dynamic = std::vector<G4double>(13, 0.0);
+  
+  G4int icopyI = 201;
+  G4double angDisp_24 = 0.01815;      // 1.04^0
+  G4double angDisp_dynamic = 0;
+  G4int numberofModules = 0;
+  G4double phi = 0.0;
+  G4double phi1 = 0.0;
+  
+ for (int i = 0; i < 13; i++) {
+        radius_dynamic[i] = radius_24[i]; // original
+        radius_dynamic[i] = radius_24[i]; // for pions/aegis
+      }
+ //    numberofModules = 24;
+     numberofModules = 2;
+      angDisp_dynamic = angDisp_24; 
+      
+   G4int moduleNumber = 0;
+  for (int i = 0; i < numberofModules; i++){
+    phi = (i * 2 * M_PI / numberofModules);
+    for (int j = -6; j < 7; j++) {
+      phi1 = phi + j * angDisp_dynamic;
+      G4double radius_new = radius_dynamic[j + 6] * cm;
+      G4RotationMatrix rot = G4RotationMatrix();
+      rot.rotateZ(phi);
+      G4ThreeVector loc = G4ThreeVector(radius_new * cos(phi1), radius_new * sin(phi1), 0.0);
+      G4Transform3D transform(rot, loc);
+      moduleNumber = icopyI + i * 13 + j + 6;
+      G4String nameNewI = "scin_" + G4UIcommand::ConvertToString(moduleNumber);
+   
+      new G4PVPlacement(
+        transform, fScinLogInModule, nameNewI, fWorldLogical,
+        true, icopyI + i * 13 + j + 6, checkOverlaps);
+
+    }
+  }    
+
+  */
+
+  /*
+    // Creating an envelope around the aluminium scintilltor and antiproton source
+    G4Box *envBox = new G4Box("envBox", 0.5 * m / 2.0, 0.5 * m / 2.0, 0.5 * m / 2.0);
+    G4LogicalVolume *envLogic = new G4LogicalVolume(envBox, Gal_mat, "envBox");
+    G4VPhysicalVolume *envPhys = new G4PVPlacement(0, G4ThreeVector(0.0, 0.0, 0.0), envLogic, "envBox", fWorldLogical, false, 0, true);
+  */
+
+    // Creating the aluminium scintillator
+
+    /*
+
+    G4Box *moBox = new G4Box("moBox", 2 * micrometer / 2.0, 2 * cm / 2.0, 5.0 * cm / 2.0);
+    G4LogicalVolume *moLogic = new G4LogicalVolume(moBox, Mo, "moBox");
+    G4VPhysicalVolume *moPhys = new G4PVPlacement(0, G4ThreeVector(0.0, 0.0, 0.0), moLogic, "moBox", fWorldLogical, false, 0, true);
+
+    */
+
+  //   G4VisAttributes* moboxVisAttI = new G4VisAttributes(G4Colour(0.105, 0.210, 0.810));
+  //   moboxVisAttI->SetForceWireframe(true);
+  // //boxVisAttI->SetForceSolid(true);
+  //   moLogic->SetVisAttributes(moboxVisAttI);
+    
+                                                                                                                                                            
+return physWorld;
+
+}
+
+void MyDetectorConstruction::ConstructSDandField()
+{
+	// MySensitiveDetector *PtrDet = new MySensitiveDetector("MyDetector");
+	// 													//MyDetector is name of detector
+	// //We have created the object of our sensitive detector and now assign
+	// //it to the logical detector we want to make sensitive
+	// //logicBGO->SetSensitiveDetector(PtrDet);
+
+  // if(fScinLogInModule != NULL) 
+  //   fScinLogInModule->SetSensitiveDetector(PtrDet);
+
+  // MySensitiveDetector *moSD = new MySensitiveDetector("moSD");
+
+  //   if(moLogic != NULL) 
+  //       moLogic->SetSensitiveDetector(moSD);
+
+  
+  // MySensitiveDetector *AEgIS_SD = new MySensitiveDetector("AEgIS_SD");
+
+  //   if(fScinLogInModule != NULL) 
+  //       fScinLogInModule->SetSensitiveDetector(AEgIS_SD);
+
+  // MySensitiveDetector *AEgIS_SD_2 = new MySensitiveDetector("AEgIS_SD_2");
+
+  //   if(fScinLogInModule_2 != NULL) 
+  //       fScinLogInModule_2->SetSensitiveDetector(AEgIS_SD_2);
+
+
+  MySensitiveDetector *l5TTrapLogic_SD = new MySensitiveDetector("l5TTrapLogic_SD");
+
+    if(l5TTrapLogic != NULL) 
+        l5TTrapLogic->SetSensitiveDetector(l5TTrapLogic_SD);
+
+}
