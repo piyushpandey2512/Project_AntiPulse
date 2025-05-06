@@ -1,8 +1,4 @@
 build/
-<<<<<<< HEAD
 stl_geometry/
-=======
-stl geometry/
->>>>>>> bd9677c (Ignore build and STL geometry folders)
 *.STEP
 *.stl

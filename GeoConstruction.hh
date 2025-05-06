@@ -19,8 +19,6 @@ class MyDetectorConstruction : public G4VUserDetectorConstruction
 	~MyDetectorConstruction();
 
 	virtual G4VPhysicalVolume *Construct();
-<<<<<<< HEAD
-=======
 
 	const std::vector<G4ThreeVector>& GetModulePositions() const { return modulePositions; }
     G4double GetModuleHalfY() const { return moduleHalfY; }
@@ -29,7 +27,6 @@ class MyDetectorConstruction : public G4VUserDetectorConstruction
     G4double GetGap() const { return gap; }
     const std::vector<G4ThreeVector>& GetSources() const { return sources; }
 
->>>>>>> 3ac4172 (Initial fresh commit)
 private:
 	G4LogicalVolume* logicBGO;
 	G4LogicalVolume* fScinLog = nullptr;
@@ -39,15 +36,12 @@ private:
 	G4LogicalVolume* moLogic = nullptr;
 	G4LogicalVolume* fScintLogical=nullptr;
  
-<<<<<<< HEAD
-=======
 	std::vector<G4ThreeVector> modulePositions;
     std::vector<G4ThreeVector> sources;
     G4double moduleHalfY;
     G4double scinHalfY;
     G4double fullScinY;
     G4double gap;
->>>>>>> 3ac4172 (Initial fresh commit)
 
 	G4LogicalVolume* fWorldLogical = nullptr;
 	virtual void ConstructSDandField();

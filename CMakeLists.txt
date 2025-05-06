@@ -21,17 +21,10 @@ file(COPY ${My_MACROS} DESTINATION ${PROJECT_BINARY_DIR})
 add_executable(AntiPulse Project_AntiPulse.cc ${sources} ${headers})
 
 # Add CADMesh include directory
-<<<<<<< HEAD
-include_directories(/home/piyushp/Desktop/PhD_Work/Trento_Project/CADMesh/build/include)
-
-# Verify that the CADMesh library exists
-set(CADMesh_LIB_PATH "/home/piyushp/Desktop/PhD_Work/Trento_Project/CADMesh/build/libcadmesh.so")
-=======
 include_directories(/home/piyush/Desktop/PhD_Work/Trento_Project/CADMesh/CADMesh-1.1/build/include)
 
 # Verify that the CADMesh library exists
 set(CADMesh_LIB_PATH "/home/piyush/Desktop/PhD_Work/Trento_Project/CADMesh/CADMesh-1.1/build/libcadmesh.so")
->>>>>>> 3ac4172 (Initial fresh commit)
 if(NOT EXISTS ${CADMesh_LIB_PATH})
     message(FATAL_ERROR "CADMesh library not found at ${CADMesh_LIB_PATH}. Please build CADMesh before proceeding.")
 endif()

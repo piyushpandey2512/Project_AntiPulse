@@ -1,11 +1,8 @@
 #include "PrimaryGenerator.hh"
 #include "G4Event.hh"
-<<<<<<< HEAD
-=======
 #include <random>
 #include "GeoConstruction.hh"
 #include "G4RunManager.hh"
->>>>>>> 3ac4172 (Initial fresh commit)
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -17,25 +14,6 @@ MyPrimaryParticles::~MyPrimaryParticles()
     delete fParticleGun;
 }
 
-<<<<<<< HEAD
-void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
-{
-    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-
-  /*  // Define particles with error handling
-    G4ParticleDefinition* piPlus = particleTable->FindParticle("pi+");
-    G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
-    G4ParticleDefinition* piZero = particleTable->FindParticle("pi0");
-    
-    if (!piPlus || !piMinus || !piZero) {
-        G4Exception("MyPrimaryParticles::GeneratePrimaries", "Event0101", FatalException,
-                    "One or more particle definitions could not be found.");
-        return;
-    }
-
-    // Generate isotropic directions and momenta
-    for (auto particleDef : {piPlus, piMinus, piZero})
-=======
 
 /*************Working Code for pions in all directions*******************/
 
@@ -44,71 +22,40 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 {
     G4cout << "[PrimaryGenerator] Generating event: " << anEvent->GetEventID() << G4endl;
 
+    // Define the particle type
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
     G4ParticleDefinition* piPlus = particleTable->FindParticle("pi+");
-
     if (!piPlus) {
         G4Exception("MyPrimaryParticles::GeneratePrimaries", "Event0101", FatalException,
                     "Particle definition for pi+ could not be found.");
         return;
     }
-
-    // Set the particle type
     fParticleGun->SetParticleDefinition(piPlus);
 
-    for (auto particleDef : {piPlus})
->>>>>>> 3ac4172 (Initial fresh commit)
-    {
+    // Define the source positions
+    std::vector<G4ThreeVector> sourcePositions = {
+        G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),          // Center of STL geometry
+        G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 50 * cm), // +50 cm along STL axis
+        G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 50 * cm)  // -50 cm along STL axis
+    };
+
+    // Loop over each source
+    for (const auto& sourcePos : sourcePositions) {
+        // Set particle properties for each source
+        fParticleGun->SetParticlePosition(sourcePos);
+
+        // Randomize direction within a small cone (similar to /gps/ang/maxtheta)
         G4double phi = 2 * M_PI * G4UniformRand();
-        G4double cosTheta = -1.0 + 2.0 * G4UniformRand();
-        G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
-
+        G4double theta = 1 * deg * G4UniformRand(); // Max theta = 1 degree
+        G4double sinTheta = std::sin(theta);
+        G4double cosTheta = std::cos(theta);
         G4ThreeVector direction(sinTheta * std::cos(phi), sinTheta * std::sin(phi), cosTheta);
-
-<<<<<<< HEAD
-        G4double momentumMag = (140 * MeV) * G4UniformRand(); // Example momentum range
-=======
-        G4double momentumMag = (150 * MeV) * G4UniformRand(); // Example momentum range
->>>>>>> 3ac4172 (Initial fresh commit)
-        G4ThreeVector momentum = momentumMag * direction;
-
-        fParticleGun->SetParticleDefinition(particleDef);
         fParticleGun->SetParticleMomentumDirection(direction);
-        fParticleGun->SetParticleMomentum(momentumMag);
-<<<<<<< HEAD
-        fParticleGun->SetParticlePosition(G4ThreeVector(0., 0., 0.)); // Origin of annihilation
-        fParticleGun->GeneratePrimaryVertex(anEvent);
-    } */
 
-    G4ParticleDefinition* antiProton = particleTable->FindParticle("anti_proton");
-    G4ParticleDefinition* piPlus = particleTable->FindParticle("pi+");
-    G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
-    G4ParticleDefinition* piZero = particleTable->FindParticle("pi0");
+        // Set particle energy to 150 MeV
+        fParticleGun->SetParticleEnergy(150 * MeV);
 
-    // if (!antiProton) {
-    // G4Exception("MyPrimaryParticles::GeneratePrimaries", "Event0102", FatalException,
-    //             "Antiproton particle definition not found.");
-    // return;
-    // }
-
-    // fParticleGun->SetParticleDefinition(antiProton);
-    fParticleGun->SetParticleDefinition(piPlus);
-    // fParticleGun->SetParticleDefinition(piMinus);    
-    // fParticleGun->SetParticleDefinition(piZero);
-
-    G4ThreeVector direction(1.0, 0.0, 0.0);
-
-    fParticleGun->SetParticleMomentumDirection(direction);
-    fParticleGun->SetParticleMomentum(1.0 * keV);
-    // fParticleGun->SetParticleMomentum(2.0 * MeV);
-    // fParticleGun->SetParticlePosition(G4ThreeVector(0.0, 0.0, 0.0));
-    fParticleGun->SetParticlePosition(G4ThreeVector(-8.0*cm, 3.5*cm, 8.0*cm));
-
-    fParticleGun->GeneratePrimaryVertex(anEvent);
-}
-
-=======
-        fParticleGun->SetParticlePosition(G4ThreeVector(-8.0*cm, 3.5*cm, 8.0*cm)); // Origin of annihilation
+        // Generate the primary vertex
         fParticleGun->GeneratePrimaryVertex(anEvent);
     }
 
@@ -153,4 +100,3 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
 /****************************************************************/
 
->>>>>>> 3ac4172 (Initial fresh commit)
