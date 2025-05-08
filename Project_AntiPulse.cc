@@ -18,7 +18,7 @@
 
 int main(int argc, char** argv)
 {
-	G4RunManager *runManager = new G4RunManager();
+		G4RunManager *runManager = new G4RunManager();
         runManager->SetUserInitialization(new MyDetectorConstruction());
 		
 		// Create the physics list using G4PhysListFactory
@@ -33,8 +33,16 @@ int main(int argc, char** argv)
 
 
         // runManager->SetUserInitialization(new MyPhysicsList());
-        runManager->SetUserInitialization(new MyAction());
+        G4String outputFileName = "Project_AntiPulse";
+		runManager->SetUserInitialization(new MyAction(outputFileName));
         runManager->Initialize();
+
+		// User Interface manager
+		G4UImanager *UImanager = G4UImanager::GetUIpointer();
+		UImanager->ApplyCommand("/control/verbose 1");
+		UImanager->ApplyCommand("/run/verbose 1");
+		UImanager->ApplyCommand("/event/verbose 0");
+		UImanager->ApplyCommand("/tracking/verbose 0");
 
 // Set visualization
 
@@ -45,29 +53,22 @@ int main(int argc, char** argv)
 		}
 
 
-	G4VisManager *visManager = new G4VisExecutive();
-	visManager->Initialize();
-
-	// User Interface manager
-	G4UImanager *UImanager = G4UImanager::GetUIpointer();
+	// G4VisManager *visManager = new G4VisExecutive();
+	// visManager->Initialize();
 	
 
 	if(ui)
 		{
-			UImanager->ApplyCommand("/control/execute /home/piyushp/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/vis.mac");
+			UImanager->ApplyCommand("/control/execute /home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/vis.mac");
 			ui->SessionStart();
 			delete ui;  // Clean up UI. If you want to use visuals, comment this out
-
-		UImanager->ApplyCommand("/control/execute vis.mac");
-		ui->SessionStart();
-		//delete ui;  // Clean up UI. If you want to use visuals, comment this out
 		}
 
 	else
 		{
-		G4String command ="/control/execute ";
-		G4String filename= argv[1];
-		UImanager->ApplyCommand(command+filename);
+			G4String command ="/control/execute ";
+			G4String filename= argv[1];
+			UImanager->ApplyCommand(command+filename);
 		}
 	
 

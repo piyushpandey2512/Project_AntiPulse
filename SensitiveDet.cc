@@ -23,6 +23,11 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
     // Get the position of the interaction
     G4ThreeVector positionPion = preStepPoint->GetPosition();
 
+    // Extract x, y, z coordinates
+    G4double xPos = positionPion.x() / cm; // Convert to cm
+    G4double yPos = positionPion.y() / cm;
+    G4double zPos = positionPion.z() / cm;    
+
     // Get the volume information
     const G4VTouchable *touchable = aStep->GetPostStepPoint()->GetTouchable();
     G4VPhysicalVolume *physVol = touchable->GetVolume();
@@ -51,14 +56,21 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
     // Use G4AnalysisManager to store the data in an ntuple
     G4AnalysisManager *manager = G4AnalysisManager::Instance();
     G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
-    manager->FillNtupleIColumn(0, eventID); // Event ID
-    manager->FillNtupleIColumn(1, copyNumber); // Scintillator copy number
-    manager->FillNtupleSColumn(2, particleName); // Particle name
-    manager->FillNtupleDColumn(3, energyDeposit); // Energy deposit
-    manager->FillNtupleSColumn(4, processName); // Process name
-    manager->FillNtupleDColumn(5, localTime); // Local time
-    manager->FillNtupleDColumn(6, globalTime); // Global time
-    manager->AddNtupleRow(0); // Add the row to ntuple 0
+    manager->FillNtupleIColumn(0, eventID);              // fEvent
+    manager->FillNtupleDColumn(1, xPos);                 // fXcor
+    manager->FillNtupleDColumn(2, yPos);                 // fYcor
+    manager->FillNtupleDColumn(3, zPos);                 // fZcor
+    manager->FillNtupleIColumn(4, parentID);             // fParentID
+    manager->FillNtupleIColumn(5, trackID);              // fTrackID
+    manager->FillNtupleIColumn(6, stepID);               // fStepID
+    manager->FillNtupleSColumn(7, processName);          // fProcess
+    manager->FillNtupleDColumn(8, localTime);            // fTimeL
+    manager->FillNtupleDColumn(9, globalTime);           // fTimeG
+    manager->FillNtupleDColumn(10, energyDeposit);       // fEnergyDeposition
+    manager->FillNtupleIColumn(11, copyNumber);          // fCopyID
+    manager->FillNtupleSColumn(12, particleName);        // fParticles
+
+    manager->AddNtupleRow(0);
 
 	// Fill histograms for scintillator hits and energy deposition
     if (particleName == "pi+" || particleName == "pi-" || particleName == "pi0") {

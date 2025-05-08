@@ -13,12 +13,15 @@
 class MyAction : public G4VUserActionInitialization
 {
 public:
-	MyAction();
-	~MyAction();
+	MyAction(const G4String& outputFileName);
+	virtual ~MyAction();
 
 //Build() is the virtual function of class G4VUserActionInitialization
 
 	virtual void Build() const; 
+
+private:
+    G4String fOutputFileName;
 
 };
 #endif

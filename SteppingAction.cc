@@ -24,129 +24,88 @@ std::map<G4int, G4ThreeVector> entryPointMap2; // Left-side front
 
 void MySteppingAction::UserSteppingAction(const G4Step* step)
 {
-    // Get the pre-step point and volume
     G4StepPoint* preStepPoint = step->GetPreStepPoint();
     G4VPhysicalVolume* volume = preStepPoint->GetPhysicalVolume();
     if (!volume) return;
 
     G4String volumeName = volume->GetName();
-    G4cout << "[DEBUG] Step detected in volume: " << volumeName << G4endl;
-
-    // Check if the step is in the scintillator volume
-    if (volumeName != "ScintillatorLV") return;
-
-    // Extract copy number and event information
     G4int copyNumber = volume->GetCopyNo();
     const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent();
     G4int eventID = event->GetEventID();
-    G4cout << "[DEBUG] Event ID: " << eventID << ", Copy Number: " << copyNumber << G4endl;
 
-    // Get the position and energy deposition
+    // DEBUG: print volume name
+    G4cout << "[DEBUG] Stepping in volume: " << volumeName 
+           << ", CopyNo: " << copyNumber 
+           << ", EventID: " << eventID << G4endl;
+
+    if (volumeName != "ScintillatorLV") return;
+
     G4ThreeVector position = preStepPoint->GetPosition();
     G4double x = position.x() / cm;
     G4double y = position.y() / cm;
     G4double z = position.z() / cm;
     G4double energyDep = step->GetTotalEnergyDeposit();
-    G4cout << "[DEBUG] Position: (" << x << ", " << y << ", " << z << "), Energy Deposition: " << energyDep / MeV << " MeV" << G4endl;
 
-    // Get the analysis manager instance
+    G4cout << "[DEBUG] In ScintillatorLV — Pos: (" << x << ", " << y << ", " << z 
+           << "), EnergyDep: " << energyDep / MeV << " MeV, StepStatus: " 
+           << preStepPoint->GetStepStatus() << G4endl;
+
     auto analysisManager = G4AnalysisManager::Instance();
 
-    // Front surface - Right side
+    // Helper lambda for safe file writing with debug
+    auto writeToFile = [&](const G4String& tag) {
+        std::ofstream res("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/build/PionInteractions.dat", std::ios::app);
+        if (res.is_open()) {
+            G4cout << "[DEBUG] Writing to file: " << tag << G4endl;
+            res << tag << "\t" << x << "\t" << y << "\t" << z << "\t"
+                << energyDep / MeV << " MeV" << std::endl;
+            res.close();
+        } else {
+            G4cerr << "[ERROR] Could not open PionInteractions.dat for writing!" << G4endl;
+        }
+    };
+
+    // --- Right Side ---
     if (copyNumber >= 0 && copyNumber < 100 && z > 40 && z < 50) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary && entryPointMap1.find(eventID) == entryPointMap1.end()) {
+            G4cout << "[DEBUG] Front (Right) boundary crossed." << G4endl;
             entryPointMap1[eventID] = position;
-            G4cout << "[DEBUG] Front (Right) entry point recorded for Event ID: " << eventID << G4endl;
-
-            // Fill histograms
-            analysisManager->FillH1(0, copyNumber);          // Histogram for copy numbers
-            analysisManager->FillH1(1, energyDep / MeV);     // Histogram for energy deposition
-
-            // Write to file
-            std::ofstream res("PionInteractions.dat", std::ios::app);
-            if (res.is_open()) {
-                res << "Front (Right)\t"
-                    << x << "\t" << y << "\t" << z << "\t"
-                    << energyDep / MeV << " MeV" << std::endl;
-                G4cout << "[DEBUG] Data written to PionInteractions.dat for Front (Right)." << G4endl;
-            } else {
-                G4cerr << "Error: Could not open PionInteractions.dat for writing!" << G4endl;
-            }
+            analysisManager->FillH1(0, copyNumber);
+            analysisManager->FillH1(1, energyDep / MeV);
+            writeToFile("Front (Right)");
         }
     }
 
-    // Back module - Right side
     if (copyNumber >= 100 && copyNumber < 200 && z > 40 && z < 50) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary && entryPointMap1.find(eventID) != entryPointMap1.end()) {
-            G4cout << "[DEBUG] Back (Right) detected for Event ID: " << eventID << G4endl;
-
-            // Fill histograms
-            analysisManager->FillH1(0, copyNumber);          // Histogram for copy numbers
-            analysisManager->FillH1(1, energyDep / MeV);     // Histogram for energy deposition
-
-            // Write to file
-            std::ofstream res("PionInteractions.dat", std::ios::app);
-            if (res.is_open()) {
-                res << "Back (Right)\t"
-                    << x << "\t" << y << "\t" << z << "\t"
-                    << energyDep / MeV << " MeV" << std::endl;
-                G4cout << "[DEBUG] Data written to PionInteractions.dat for Back (Right)." << G4endl;
-            } else {
-                G4cerr << "Error: Could not open PionInteractions.dat for writing!" << G4endl;
-            }
-
+            G4cout << "[DEBUG] Back (Right) boundary crossed." << G4endl;
+            analysisManager->FillH1(0, copyNumber);
+            analysisManager->FillH1(1, energyDep / MeV);
+            writeToFile("Back (Right)");
             entryPointMap1.erase(eventID);
             step->GetTrack()->SetTrackStatus(fStopAndKill);
-            G4cout << "[DEBUG] Track stopped for Event ID: " << eventID << G4endl;
         }
     }
 
-    // Front surface - Left side
+    // --- Left Side ---
     if (copyNumber >= 300 && copyNumber < 400 && z < -40 && z > -50) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary && entryPointMap2.find(eventID) == entryPointMap2.end()) {
+            G4cout << "[DEBUG] Front (Left) boundary crossed." << G4endl;
             entryPointMap2[eventID] = position;
-            G4cout << "[DEBUG] Front (Left) entry point recorded for Event ID: " << eventID << G4endl;
-
-            // Fill histograms
-            analysisManager->FillH1(0, copyNumber);          // Histogram for copy numbers
-            analysisManager->FillH1(1, energyDep / MeV);     // Histogram for energy deposition
-
-            // Write to file
-            std::ofstream res("PionInteractions.dat", std::ios::app);
-            if (res.is_open()) {
-                res << "Front (Left)\t"
-                    << x << "\t" << y << "\t" << z << "\t"
-                    << energyDep / MeV << " MeV" << std::endl;
-                G4cout << "[DEBUG] Data written to PionInteractions.dat for Front (Left)." << G4endl;
-            } else {
-                G4cerr << "Error: Could not open PionInteractions.dat for writing!" << G4endl;
-            }
+            analysisManager->FillH1(0, copyNumber);
+            analysisManager->FillH1(1, energyDep / MeV);
+            writeToFile("Front (Left)");
         }
     }
 
-    // Back module - Left side
     if (copyNumber >= 200 && copyNumber < 300 && z < -40 && z > -50) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary && entryPointMap2.find(eventID) != entryPointMap2.end()) {
-            G4cout << "[DEBUG] Back (Left) detected for Event ID: " << eventID << G4endl;
-
-            // Fill histograms
-            analysisManager->FillH1(0, copyNumber);          // Histogram for copy numbers
-            analysisManager->FillH1(1, energyDep / MeV);     // Histogram for energy deposition
-
-            // Write to file
-            std::ofstream res("PionInteractions.dat", std::ios::app);
-            if (res.is_open()) {
-                res << "Back (Left)\t"
-                    << x << "\t" << y << "\t" << z << "\t"
-                    << energyDep / MeV << " MeV" << std::endl;
-                G4cout << "[DEBUG] Data written to PionInteractions.dat for Back (Left)." << G4endl;
-            } else {
-                G4cerr << "Error: Could not open PionInteractions.dat for writing!" << G4endl;
-            }
-
+            G4cout << "[DEBUG] Back (Left) boundary crossed." << G4endl;
+            analysisManager->FillH1(0, copyNumber);
+            analysisManager->FillH1(1, energyDep / MeV);
+            writeToFile("Back (Left)");
             entryPointMap2.erase(eventID);
             step->GetTrack()->SetTrackStatus(fStopAndKill);
-            G4cout << "[DEBUG] Track stopped for Event ID: " << eventID << G4endl;
         }
     }
 }

@@ -13,139 +13,6 @@
 using namespace std;
 
 
-
-MyDetectorConstruction::MyDetectorConstruction()
-: fScintLogical(0) // initialize member pointer (assumed declared in header)
-{
-    G4cout << "[DEBUG] MyDetectorConstruction constructor called." << G4endl;
-}
-
-
-MyDetectorConstruction::~MyDetectorConstruction()
-{
-    G4cout << "[DEBUG] MyDetectorConstruction destructor called." << G4endl;
-}
-
-G4VPhysicalVolume* MyDetectorConstruction::Construct()
-{
-    G4cout << "[DEBUG] Construct method called. Starting geometry construction..." << G4endl;
-
-    // --- Material and Element Definitions ---
-    G4NistManager *nist = G4NistManager::Instance();
-    G4cout << "[DEBUG] NIST Manager instance retrieved." << G4endl;
-
-    // Elements
-    G4Element* elH  = nist->FindOrBuildElement("H");
-    G4Element* elC  = nist->FindOrBuildElement("C");
-    G4Element* elO  = nist->FindOrBuildElement("O");
-    G4Element* elSi = nist->FindOrBuildElement("Si");
-    G4Element* elMn = nist->FindOrBuildElement("Mn");
-    G4Element* elCr = nist->FindOrBuildElement("Cr");
-    G4Element* elNi = nist->FindOrBuildElement("Ni");
-    G4Element* elFe = nist->FindOrBuildElement("Fe");
-    G4cout << "[DEBUG] Elements defined." << G4endl;
-
-    // Materials
-    G4Material *volMatWorld = nist->FindOrBuildMaterial("G4_AIR");
-    G4Material* Gal_mat     = nist->FindOrBuildMaterial("G4_Galactic");
-    G4cout << "[DEBUG] World and Galactic materials defined." << G4endl;
-
-    // Define Stainless steel 304
-    G4double density = 7.999*g/cm3;
-    G4Material* mat304steel = new G4Material("Stainless steel 304", density, 6);
-    mat304steel->AddElement(elMn, 0.02);
-    mat304steel->AddElement(elSi, 0.01);
-    mat304steel->AddElement(elCr, 0.19);
-    mat304steel->AddElement(elNi, 0.10);
-    mat304steel->AddElement(elFe, 0.6792);
-    mat304steel->AddElement(elC, 0.0008);
-    G4cout << "[DEBUG] Stainless steel 304 material defined." << G4endl;
-
-    // Define plastic scintillator material (vinyl-toluene)
-    G4Material* fScinMaterial = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");
-    G4cout << "[DEBUG] Plastic scintillator material defined." << G4endl;
-
-    // --- World Volume ---
-    G4double wRadius = 300*cm;
-    G4double wLength = 530*cm;
-    G4String wName = "World";
-
-    G4VSolid* wSolid = new G4Tubs(wName, 0, wRadius, wLength/2, 0, 360);
-    G4LogicalVolume* wLogic = new G4LogicalVolume(wSolid, Gal_mat, "World");
-    G4bool overlapCheck = true;
-    G4VPhysicalVolume* physWorld = new G4PVPlacement(0, G4ThreeVector(), wLogic, "World", 0, false, 0, overlapCheck);
-    G4cout << "[DEBUG] World volume created." << G4endl;
-
-    // --- Define Scintillator (single) ---
-    G4double scinHalfX = 2.5*cm / 2.0;   // 1.25 cm
-    G4double scinHalfY = 0.6*cm / 2.0;    // 0.3 cm
-    G4double scinHalfZ = 50.0*cm / 2.0;   // 25.0 cm
-
-    G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
-    fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
-    G4cout << "[DEBUG] Scintillator logical volume created." << G4endl;
-
-    // --- Arrange Scintillators as Modules ---
-    G4double gap = 0.1*cm;
-    G4double fullScinY = 2*scinHalfY;
-    G4double moduleTotalY = 13*(fullScinY + gap) - gap;
-    G4double moduleHalfY = moduleTotalY/2.0;
-
-    std::vector<G4ThreeVector> modulePositions;
-    modulePositions.push_back(G4ThreeVector(15*cm, 0, 45*cm));
-    modulePositions.push_back(G4ThreeVector(23*cm, 0, 45*cm));
-    modulePositions.push_back(G4ThreeVector(15*cm, 0, -45*cm));
-    modulePositions.push_back(G4ThreeVector(23*cm, 0, -45*cm));
-    G4cout << "[DEBUG] Module positions defined." << G4endl;
-
-    for (size_t m = 0; m < modulePositions.size(); m++) {
-        G4ThreeVector modCenter = modulePositions[m];
-        for (G4int j = 0; j < 13; j++) {
-            G4double localY = -moduleHalfY + scinHalfY + j * (fullScinY + gap);
-            G4ThreeVector scintPos = modCenter + G4ThreeVector(0, localY, 0);
-            new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
-            G4cout << "[DEBUG] Scintillator placed at: " << scintPos << G4endl;
-        }
-    }
-
-    // --- STL Geometry (CADMesh) ---
-    G4String stlFile = "/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/stl_geometry/TotalGravModuleV2.stl";
-    CADMesh *cadMesh = new CADMesh(const_cast<char*>(stlFile.c_str()));
-    cadMesh->SetScale(1.0);
-    cadMesh->SetReverse(false);
-
-    G4VSolid *stlSolid = cadMesh->TessellatedMesh();
-    G4LogicalVolume* stlLogical = new G4LogicalVolume(stlSolid, mat304steel, "STLVolume");
-    G4cout << "[DEBUG] STL geometry loaded from file: " << stlFile << G4endl;
-
-    G4RotationMatrix* rotation = new G4RotationMatrix();
-    rotation->rotateX(90.0*deg);
-    G4ThreeVector stlPosition(-8.0*cm, 3.5*cm, 8.0*cm);
-    new G4PVPlacement(rotation, stlPosition, stlLogical, "STLVolume", wLogic, false, 0, overlapCheck);
-    G4cout << "[DEBUG] STL geometry placed at: " << stlPosition << G4endl;
-
-    // --- Define Source Positions ---
-    sources.push_back(stlPosition);                      // Center of STL geometry
-    sources.push_back(stlPosition + G4ThreeVector(0, 0, 50 * cm)); // +50 cm along STL axis
-    sources.push_back(stlPosition + G4ThreeVector(0, 0, -50 * cm)); // -50 cm along STL axis
-
-    return physWorld;
-}
-
-void MyDetectorConstruction::ConstructSDandField()
-{
-    G4cout << "[DEBUG] ConstructSDandField called." << G4endl;
-
-    MySensitiveDetector *scintSD = new MySensitiveDetector("ScintillatorSD");
-    if (fScintLogical) {
-        fScintLogical->SetSensitiveDetector(scintSD);
-        G4cout << "[DEBUG] Sensitive detector assigned to ScintillatorLV." << G4endl;
-    } else {
-        G4cerr << "[ERROR] ScintillatorLV is null. Sensitive detector not assigned." << G4endl;
-    }
-}
-
-/*
 MyDetectorConstruction::MyDetectorConstruction()
 : fScintLogical(0) // initialize member pointer (assumed declared in header)
 {}
@@ -270,12 +137,6 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
                     0,
                     overlapCheck);
 
-  
-  // --- Define Source Positions ---
-  sources.push_back(stlPosition);                      // Center of STL geometry
-  sources.push_back(stlPosition + G4ThreeVector(0, 0, 50 * cm)); // +50 cm along STL axis
-  sources.push_back(stlPosition + G4ThreeVector(0, 0, -50 * cm)); // -50 cm along STL axis
-
   return physWorld;
 }
 
@@ -288,4 +149,3 @@ void MyDetectorConstruction::ConstructSDandField()
   if (fScintLogical)
     fScintLogical->SetSensitiveDetector(scintSD);
 }
-*/

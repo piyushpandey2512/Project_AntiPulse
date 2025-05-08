@@ -2,4 +2,3 @@
 /vis/drawVolume
 /vis/viewer/set/autoRefresh true
 /vis/scene/add/trajectories smooth
-# /vis/disablegit log -- stl_geometry/

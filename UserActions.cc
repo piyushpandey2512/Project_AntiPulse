@@ -1,7 +1,7 @@
 #include "UserActions.hh"
 
-MyAction::MyAction()
-{}
+MyAction::MyAction(const G4String& outputFileName)
+ : fOutputFileName(outputFileName) {}
 
 MyAction::~MyAction()
 {}
@@ -14,17 +14,14 @@ void MyAction::Build() const
 
 	// Add Run Action
 	MyRunAction *runAction = new MyRunAction();
-	SetUserAction(runAction);
+    runAction->SetOutputFileName(fOutputFileName);  // << Set it directly
+    SetUserAction(runAction);
 	
 	//Add Event Action
 	MyEventAction *eventAction = new MyEventAction(runAction);
 	SetUserAction(eventAction);
 
-	// Check if the file name is set via macro (or default to base name)
-    G4String outputFileName = G4UImanager::GetUIpointer()->GetCurrentValues("/setOutputFileName");
-    if (!outputFileName.empty()) {
-        runAction->SetOutputFileName(outputFileName);
-    }
+	   
 	
 	//Add Stepping Action
 	MySteppingAction *steppingAction = new MySteppingAction(eventAction);
