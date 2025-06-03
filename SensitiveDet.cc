@@ -2,6 +2,8 @@
 #include "G4SystemOfUnits.hh"
 #include "G4AnalysisManager.hh"
 #include "G4RunManager.hh"
+#include "HitBuffer.hh"
+
 
 // Constructor
 MySensitiveDetector::MySensitiveDetector(G4String DetName) : G4VSensitiveDetector(DetName)
@@ -27,6 +29,8 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
     G4double xPos = positionPion.x() / cm; // Convert to cm
     G4double yPos = positionPion.y() / cm;
     G4double zPos = positionPion.z() / cm;    
+
+
 
     // Get the volume information
     const G4VTouchable *touchable = aStep->GetPostStepPoint()->GetTouchable();
@@ -69,11 +73,10 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
     manager->FillNtupleDColumn(10, energyDeposit);       // fEnergyDeposition
     manager->FillNtupleIColumn(11, copyNumber);          // fCopyID
     manager->FillNtupleSColumn(12, particleName);        // fParticles
-
     manager->AddNtupleRow(0);
 
 	// Fill histograms for scintillator hits and energy deposition
-    if (particleName == "pi+" || particleName == "pi-" || particleName == "pi0") {
+    if (particleName == "pi+" || particleName == "pi-" || particleName == "pi0" || particleName == "anti_proton") {
         // Histogram for scintillator copy numbers where pions are detected
         manager->FillH1(0, copyNumber); // Histogram ID 0 for scintillator copy numbers
 
@@ -81,6 +84,24 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
         if (energyDeposit > 0) {
             manager->FillH1(1, energyDeposit); // Histogram ID 1 for energy deposition
         }
+    }
+
+    
+    // Only accept valid tracks
+    if (trackID <= 0) return false;
+
+    // Record hits based on known geometry locations
+    if (xPos < 16 && zPos > 44 && frontHits45.count(trackID) == 0) {
+        frontHits45[trackID] = {{xPos, yPos, zPos}, eventID, trackID};
+    }
+    else if (xPos > 22 && zPos > 44 && backHits45.count(trackID) == 0) {
+        backHits45[trackID] = {{xPos, yPos, zPos}, eventID, trackID};
+    }
+    else if (xPos < 16 && zPos < -44 && frontHitsMinus45.count(trackID) == 0) {
+        frontHitsMinus45[trackID] = {{xPos, yPos, zPos}, eventID, trackID};
+    }
+    else if (xPos > 22 && zPos < -44 && backHitsMinus45.count(trackID) == 0) {
+        backHitsMinus45[trackID] = {{xPos, yPos, zPos}, eventID, trackID};
     }
 
     return true; // Indicate that the hit was processed successfully

@@ -15,8 +15,8 @@ public:
 
 private:
     MyEventAction *fEventAction;
-    std::map<G4int, G4ThreeVector> entryPointMap1; // Right-side front
-    std::map<G4int, G4ThreeVector> entryPointMap2; // Left-side front
+
+    void writeToFile(const G4String& tag, G4double x, G4double y, G4double z, G4double energyDep);
 };
 
 #endif

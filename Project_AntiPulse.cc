@@ -21,14 +21,15 @@ int main(int argc, char** argv)
 		G4RunManager *runManager = new G4RunManager();
         runManager->SetUserInitialization(new MyDetectorConstruction());
 		
+		
 		// Create the physics list using G4PhysListFactory
-  		G4int verbose = 1;
+  		
+		G4int verbose = 1;
    		G4PhysListFactory factory;
     	G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_INCLXX_EMZ");
 		// G4VModularPhysicsList* physlist = factory.GetReferencePhysList("FTFP_BERT_HP");
     	physlist->SetVerboseLevel(verbose);
-		physlist->RegisterPhysics(new G4HadronPhysicsFTFP_BERT());
-
+		// physlist->RegisterPhysics(new G4HadronPhysicsFTFP_BERT());
     	runManager->SetUserInitialization(physlist);
 
 

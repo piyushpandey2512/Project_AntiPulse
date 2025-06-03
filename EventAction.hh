@@ -3,25 +3,32 @@
 
 #include "G4UserEventAction.hh"
 #include "G4Event.hh"
+#include "G4ThreeVector.hh"
 
-#include "g4root.hh"
-#include "RunAction.hh"
-#include "G4UnitsTable.hh"
-#include "G4RunManager.hh"
+class MyRunAction;
 
 class MyEventAction : public G4UserEventAction
 {
 public:
-	MyEventAction(MyRunAction*);
-	~MyEventAction();
-	
-	virtual void BeginOfEventAction(const G4Event*);
-	virtual void EndOfEventAction(const G4Event*);
-	
-	//Function to add step wise energy deposition
-	void AddEnergyDep(G4double edep){fEnergyDeposition += edep;}
+    MyEventAction(MyRunAction*);
+    ~MyEventAction();
+    
+    virtual void BeginOfEventAction(const G4Event*);
+    virtual void EndOfEventAction(const G4Event*);
+    
+    void AddEnergyDep(G4double edep) { fEnergyDeposition += edep; }
+
+    void SetFrontPoint(const G4ThreeVector& front);
+    void SetBackPoint(const G4ThreeVector& back);
+    
 private:
-	G4double fEnergyDeposition;
+    G4double fEnergyDeposition;
+
+    // For angular deviation
+    G4ThreeVector fFrontPosition;
+    G4ThreeVector fBackPosition;
+    G4bool hasFront = false;
+    G4bool hasBack = false;
 };
 
 #endif

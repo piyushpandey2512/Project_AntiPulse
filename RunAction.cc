@@ -15,27 +15,22 @@ MyRunAction::~MyRunAction()
 
 void MyRunAction::BeginOfRunAction(const G4Run*)
 {
-    // G4cout << "[DEBUG] BeginOfRunAction called. Initializing geometry..." << G4endl;
-    // G4RunManager::GetRunManager()->ReinitializeGeometry();
-    // G4cout << "[DEBUG] Geometry initialized." << G4endl;
+    // Clear the PionInteractions.dat file at the beginning of each run
+    std::ofstream clearFile("PionInteractions.dat", std::ios::trunc);
+    clearFile.close();
 
     G4AnalysisManager *manager = G4AnalysisManager::Instance();
-    // G4cout << "[DEBUG] AnalysisManager instance retrieved." << G4endl;
 
     manager->SetDefaultFileType("root");
-    // G4cout << "[DEBUG] Default file type set to ROOT." << G4endl;
 
     // Reset histograms at the beginning of the run
     manager->Reset();
-    // G4cout << "[DEBUG] Histograms reset." << G4endl;
 
     // Opening the ROOT file with the dynamic name
     G4String fileName = fOutputFileName + ".root";
     manager->OpenFile(fileName);
-    // G4cout << "[DEBUG] ROOT file opened: " << fileName << G4endl;
 
     // Create ntuple for detailed event information
-    // G4cout << "[DEBUG] Creating ntuple for detailed event information." << G4endl;
     manager->CreateNtuple("Output", "Output");
     manager->CreateNtupleIColumn("fEvent"); // Integer column
     manager->CreateNtupleDColumn("fXcor"); // Double column
@@ -51,20 +46,21 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateNtupleIColumn("fCopyID"); // Integer column
     manager->CreateNtupleSColumn("fParticles"); // String column
     manager->FinishNtuple(0);
-    // G4cout << "[DEBUG] Ntuple for detailed event information created." << G4endl;
 
     // Create ntuple for integral information
-    // G4cout << "[DEBUG] Creating ntuple for integral information." << G4endl;
     manager->CreateNtuple("IntScoring", "IntScoring");
     manager->CreateNtupleDColumn("Energy Deposition"); // Double column
     manager->FinishNtuple(1);
-    // G4cout << "[DEBUG] Ntuple for integral information created." << G4endl;
+
 
     // Create histograms
-    // G4cout << "[DEBUG] Creating histograms." << G4endl;
-    CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers;Copy Number;Counts", 400, 0, 400);
-    CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions;Energy (MeV);Counts", 100, 0, 10);
-    // G4cout << "[DEBUG] Histograms created." << G4endl;
+    CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers (Copy Number)", 400, 0, 400);
+    CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions (MeV)", 100, 0, 10);
+    CreateHistogramWithTitles(manager, "AngularDeviation", "Angular Deviation of Pion Tracks (deg)", 100, 0, 20);
+    manager->CreateH2("OriginYZ", "Extrapolated origin at x = 0",
+        200, -100, 100,   // z range (cm)
+        200, -20, 20);  // y range (cm)
+
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)
