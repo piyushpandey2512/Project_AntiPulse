@@ -113,22 +113,21 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
   }
 
   // --- STL Geometry (CADMesh) ---
-  // G4String stlFile = "/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/stl_geometry/TotalGravModuleV2.stl";
-  // G4String stlFile = "/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/stl_geometry/InternalMoireAndExternalVac_NoFlange_21_05_2025.stl";
-  // CADMesh *cadMesh = new CADMesh(const_cast<char*>(stlFile.c_str()));
-  // cadMesh->SetScale(1.0);
-  // cadMesh->SetReverse(false);
+  G4String stlFile = "/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/stl_geometry/TotalGravModuleV2.stl";
+  CADMesh *cadMesh = new CADMesh(const_cast<char*>(stlFile.c_str()));
+  cadMesh->SetScale(1.0);
+  cadMesh->SetReverse(false);
   
-  // G4VSolid *stlSolid = cadMesh->TessellatedMesh();
+  G4VSolid *stlSolid = cadMesh->TessellatedMesh();
   
-  // G4LogicalVolume* stlLogical = new G4LogicalVolume(stlSolid, mat304steel, "STLVolume");
-  // stlLogical->SetVisAttributes(gray);
+  G4LogicalVolume* stlLogical = new G4LogicalVolume(stlSolid, mat304steel, "STLVolume");
+  stlLogical->SetVisAttributes(gray);
 
   // Rotate and place the STL volume.
   G4RotationMatrix* rotation = new G4RotationMatrix();
   rotation->rotateX(90.0*deg);
   G4ThreeVector stlPosition(-8.0*cm, 3.5*cm, 8.0*cm);
-  /* new G4PVPlacement(rotation,
+  new G4PVPlacement(rotation,
                     stlPosition,
                     stlLogical,
                     "STLVolume",
@@ -136,7 +135,6 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
                     false,
                     0,
                     overlapCheck);
-  */
 
   return physWorld;
 }
