@@ -1,4 +1,5 @@
 build/
+<<<<<<< HEAD
 
 # Ignore output files and large root files
 output/*.root
@@ -6,6 +7,9 @@ output/*.dat
 output/*.png
 
 # Ignore geometry files
+=======
+output/
+>>>>>>> dad8b89 (New changes)
 stl_geometry/
 output/
 
