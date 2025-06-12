@@ -72,9 +72,9 @@ AntiProton::AntiProton(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("Project_AntiPulse_10lac.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("Project_AntiPulse_stl_10lac.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("Project_AntiPulse_10lac.root");
+         f = new TFile("Project_AntiPulse_stl_10lac.root");
       }
       f->GetObject("Output",tree);
 

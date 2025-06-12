@@ -6,6 +6,7 @@
 
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
 <<<<<<< HEAD
+<<<<<<< HEAD
 bool useThreeSourceCone = false;
 bool useSingleSourceX = false;
 bool useSingleSourceIsotropic = false;
@@ -15,6 +16,12 @@ bool useThreeSourceCone = true;
 bool useSingleSourceX = false;
 bool useSingleSourceIsotropic = false;
 >>>>>>> 6019b63 (new update)
+=======
+bool useThreeSourceCone = false;
+bool useSingleSourceX = false;
+bool useSingleSourceIsotropic = false;
+bool useMoireSource = true;
+>>>>>>> 012bc44 (new changes)
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -31,6 +38,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
     G4cout << "[PrimaryGenerator] Generating event: " << anEvent->GetEventID() << G4endl;
 
     // Define the particle type
+<<<<<<< HEAD
 
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
@@ -53,14 +61,30 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
     G4ParticleDefinition* antiProton = particleTable->FindParticle("anti_proton");
     fParticleGun->SetParticleDefinition(piPlus);
     // fParticleGun->SetParticleDefinition(antiProton);
+=======
+>>>>>>> 012bc44 (new changes)
 
-    // --- 3-source cone emission ---
+
+    G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    G4ParticleDefinition* piPlus  = particleTable->FindParticle("pi+");
+    G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
+    G4ParticleDefinition* piZero  = particleTable->FindParticle("pi0");
+    G4ParticleDefinition* kPlus   = particleTable->FindParticle("kaon+");
+    G4ParticleDefinition* kMinus  = particleTable->FindParticle("kaon-");
+    
+
+    // --- 3-source cone emission with correct particle mix and energies ---
     if (useThreeSourceCone) {
         std::vector<G4ThreeVector> sourcePositions = {
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),
+<<<<<<< HEAD
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 50 * cm),
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 50 * cm)
 >>>>>>> 6019b63 (new update)
+=======
+            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 49 * cm),
+            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 49 * cm)
+>>>>>>> 012bc44 (new changes)
         };
 
         std::vector<G4ThreeVector> moduleCenters = {
@@ -155,43 +179,75 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         G4double coneHalfAngle = 70.0 * deg;
 
         for (const auto& sourcePos : sourcePositions) {
-            fParticleGun->SetParticlePosition(sourcePos);
+            // Generate 3 charged pions (π+ or π-)
+            for (int i = 0; i < 3; ++i) {
+                G4ParticleDefinition* pion = (G4UniformRand() < 0.5) ? piPlus : piMinus;
 
-            // Calculate the cone axis (direction toward the average module center)
-            G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+                // Cone direction logic
+                G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+                G4double cosTheta = std::cos(coneHalfAngle);
+                G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
+                G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
+                G4double phi = 2 * M_PI * G4UniformRand();
+                G4ThreeVector randomDirection(
+                    sinTheta * std::cos(phi),
+                    sinTheta * std::sin(phi),
+                    randomCosTheta);
+                G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-            // Generate a random direction within the cone
-            G4double cosTheta = std::cos(coneHalfAngle);
-            G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
-            G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
-            G4double phi = 2 * M_PI * G4UniformRand();
-            G4ThreeVector randomDirection(
-                sinTheta * std::cos(phi),
-                sinTheta * std::sin(phi),
-                randomCosTheta);
+                fParticleGun->SetParticleDefinition(pion);
+                fParticleGun->SetParticlePosition(sourcePos);
+                fParticleGun->SetParticleMomentumDirection(finalDirection);
+                fParticleGun->SetParticleEnergy(230 * MeV);
+                fParticleGun->GeneratePrimaryVertex(anEvent);
+            }
 
-            // Rotate the random direction to align with the cone axis
-            G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+            // Generate 2 neutral pions (π0)
+            for (int i = 0; i < 2; ++i) {
+                G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+                G4double cosTheta = std::cos(coneHalfAngle);
+                G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
+                G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
+                G4double phi = 2 * M_PI * G4UniformRand();
+                G4ThreeVector randomDirection(
+                    sinTheta * std::cos(phi),
+                    sinTheta * std::sin(phi),
+                    randomCosTheta);
+                G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-            // Set the particle momentum direction
-            fParticleGun->SetParticleMomentumDirection(finalDirection);
+                fParticleGun->SetParticleDefinition(piZero);
+                fParticleGun->SetParticlePosition(sourcePos);
+                fParticleGun->SetParticleMomentumDirection(finalDirection);
+                fParticleGun->SetParticleEnergy(230 * MeV);
+                fParticleGun->GeneratePrimaryVertex(anEvent);
+            }
 
-            // Set the particle energy
-            fParticleGun->SetParticleEnergy(240 * MeV);
+            // Generate kaons (K+ or K-) with 6% probability
+            if (G4UniformRand() < 0.06) {
+                G4ParticleDefinition* kaon = (G4UniformRand() < 0.5) ? kPlus : kMinus;
 
-            // Generate the primary vertex
-            fParticleGun->GeneratePrimaryVertex(anEvent);
+                G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+                G4double cosTheta = std::cos(coneHalfAngle);
+                G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
+                G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
+                G4double phi = 2 * M_PI * G4UniformRand();
+                G4ThreeVector randomDirection(
+                    sinTheta * std::cos(phi),
+                    sinTheta * std::sin(phi),
+                    randomCosTheta);
+                G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+
+                G4double kaonEnergy = 150 * MeV + G4UniformRand() * (400 * MeV - 150 * MeV);
+
+                fParticleGun->SetParticleDefinition(kaon);
+                fParticleGun->SetParticlePosition(sourcePos);
+                fParticleGun->SetParticleMomentumDirection(finalDirection);
+                fParticleGun->SetParticleEnergy(kaonEnergy);
+                fParticleGun->GeneratePrimaryVertex(anEvent);
+            }
         }
     }
 
-    // --- Single source, +x direction ---
-    if (useSingleSourceX) {
-        G4ThreeVector sourcePos(0, 0, 0); // or any desired position
-        fParticleGun->SetParticlePosition(sourcePos);
-        fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1, 0, 0)); // +x direction
-        fParticleGun->SetParticleEnergy(240 * MeV);
-        fParticleGun->GeneratePrimaryVertex(anEvent);
-    }
 
 >>>>>>> 6019b63 (new update)
     // --- Single source, isotropic emission ---
@@ -211,6 +267,9 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         fParticleGun->GeneratePrimaryVertex(anEvent);
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 012bc44 (new changes)
 
 
     if (useMoireSource) {
@@ -307,6 +366,9 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         }
     }
 
+<<<<<<< HEAD
 =======
 >>>>>>> 6019b63 (new update)
+=======
+>>>>>>> 012bc44 (new changes)
 }

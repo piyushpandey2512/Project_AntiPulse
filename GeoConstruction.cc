@@ -11,11 +11,16 @@ G4bool overlapCheck = false;
 // Toggle these to select the setup you want
 bool useSTLGeometry = true;
 <<<<<<< HEAD
+<<<<<<< HEAD
 bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = true;
 =======
 bool useFourModuleSetup = true;
 >>>>>>> 6019b63 (new update)
+=======
+bool useFourModuleSetup = false;
+bool useFourModuleSetupNewFEE = true;
+>>>>>>> 012bc44 (new changes)
 bool useTestScintillator = false;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
@@ -71,6 +76,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
         std::vector<G4ThreeVector> modulePositions = {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 012bc44 (new changes)
             G4ThreeVector(15.8*cm, 0, 45*cm),  // Right Front starts at x = 14.55 cm and ends at x = 17.05 cm
             G4ThreeVector(23.8*cm, 0, 45*cm),  // Right Front starts at x = 22.55 cm and ends at x = 25.05 cm
             G4ThreeVector(15.8*cm, 0, -45*cm), // Left Front starts at x = 14.55 cm and ends at x = 17.05 cm
@@ -107,12 +115,15 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
             G4ThreeVector(25.8*cm, 0, 27*cm),  // Right Front starts at x = 22.55 cm and ends at x = 25.05 cm
             G4ThreeVector(15.8*cm, 0, -27*cm), // Left Front starts at x = 14.55 cm and ends at x = 17.05 cm
             G4ThreeVector(25.8*cm, 0, -27*cm)  // Left Front starts at x = 22.55 cm and ends at x = 25.05 cm
+<<<<<<< HEAD
 =======
             G4ThreeVector(15.8*cm, 0, 45*cm),
             G4ThreeVector(23.8*cm, 0, 45*cm),
             G4ThreeVector(15.8*cm, 0, -45*cm),
             G4ThreeVector(23.8*cm, 0, -45*cm)
 >>>>>>> 6019b63 (new update)
+=======
+>>>>>>> 012bc44 (new changes)
         };
 
         for (size_t m = 0; m < modulePositions.size(); m++) {

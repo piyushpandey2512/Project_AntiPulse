@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 build/
 <<<<<<< HEAD
 
@@ -12,13 +13,12 @@ output/
 >>>>>>> dad8b89 (New changes)
 stl_geometry/
 output/
+=======
+output/*.dat
+build/*.root
+stl_geometry/*.stl
+>>>>>>> 3dcb7f1 (new changes)
 
 # File types to ignore
 *.STEP
 *.stl
-*.dat
-*.root
-
-# System files (optional but useful)
-.DS_Store
-Thumbs.db

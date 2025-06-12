@@ -79,6 +79,11 @@
         "semaphore": "cpp",
         "stop_token": "cpp",
         "vertexReconstruction.C": "cpp",
-        "AntiProton.C": "cpp"
+        "AntiProton.C": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "span": "cpp",
+        "variant": "cpp",
+        "viewReconsHist.C": "cpp"
     }
 }

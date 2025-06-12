@@ -17,6 +17,9 @@ private:
     MyEventAction *fEventAction;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 012bc44 (new changes)
 void writeToFile(
     std::ofstream& out,
     G4double x, G4double y, G4double z,
@@ -32,10 +35,13 @@ void writeToFile(
     const G4String& volumeName,
     G4int copyNumber,
     const G4String& inout);
+<<<<<<< HEAD
 =======
     void writeToFile(const G4String& tag, G4double x, G4double y, G4double z, G4double energyDep, 
                      const G4ThreeVector& momentum);
 >>>>>>> 6019b63 (new update)
+=======
+>>>>>>> 012bc44 (new changes)
 };
 
 #endif
