@@ -5,10 +5,16 @@
 #include "G4RunManager.hh"
 
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
+<<<<<<< HEAD
 bool useThreeSourceCone = false;
 bool useSingleSourceX = false;
 bool useSingleSourceIsotropic = false;
 bool useMoireSource = true;
+=======
+bool useThreeSourceCone = true;
+bool useSingleSourceX = false;
+bool useSingleSourceIsotropic = false;
+>>>>>>> 6019b63 (new update)
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -28,6 +34,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
 
     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+<<<<<<< HEAD
     G4ParticleDefinition* piPlus  = particleTable->FindParticle("pi+");
     G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
     G4ParticleDefinition* piZero  = particleTable->FindParticle("pi0");
@@ -41,6 +48,19 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 49 * cm),
             G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 49 * cm)
+=======
+    G4ParticleDefinition* piPlus = particleTable->FindParticle("pi+");
+    G4ParticleDefinition* antiProton = particleTable->FindParticle("anti_proton");
+    fParticleGun->SetParticleDefinition(piPlus);
+    // fParticleGun->SetParticleDefinition(antiProton);
+
+    // --- 3-source cone emission ---
+    if (useThreeSourceCone) {
+        std::vector<G4ThreeVector> sourcePositions = {
+            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),
+            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 50 * cm),
+            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 50 * cm)
+>>>>>>> 6019b63 (new update)
         };
 
         std::vector<G4ThreeVector> moduleCenters = {
@@ -55,6 +75,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
             avgModuleCenter += module;
         }
         avgModuleCenter /= moduleCenters.size();
+<<<<<<< HEAD
 
         G4double coneHalfAngle = 70.0 * deg;
 
@@ -129,6 +150,50 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
     }
 
 
+=======
+
+        G4double coneHalfAngle = 70.0 * deg;
+
+        for (const auto& sourcePos : sourcePositions) {
+            fParticleGun->SetParticlePosition(sourcePos);
+
+            // Calculate the cone axis (direction toward the average module center)
+            G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+
+            // Generate a random direction within the cone
+            G4double cosTheta = std::cos(coneHalfAngle);
+            G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
+            G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
+            G4double phi = 2 * M_PI * G4UniformRand();
+            G4ThreeVector randomDirection(
+                sinTheta * std::cos(phi),
+                sinTheta * std::sin(phi),
+                randomCosTheta);
+
+            // Rotate the random direction to align with the cone axis
+            G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+
+            // Set the particle momentum direction
+            fParticleGun->SetParticleMomentumDirection(finalDirection);
+
+            // Set the particle energy
+            fParticleGun->SetParticleEnergy(240 * MeV);
+
+            // Generate the primary vertex
+            fParticleGun->GeneratePrimaryVertex(anEvent);
+        }
+    }
+
+    // --- Single source, +x direction ---
+    if (useSingleSourceX) {
+        G4ThreeVector sourcePos(0, 0, 0); // or any desired position
+        fParticleGun->SetParticlePosition(sourcePos);
+        fParticleGun->SetParticleMomentumDirection(G4ThreeVector(1, 0, 0)); // +x direction
+        fParticleGun->SetParticleEnergy(240 * MeV);
+        fParticleGun->GeneratePrimaryVertex(anEvent);
+    }
+
+>>>>>>> 6019b63 (new update)
     // --- Single source, isotropic emission ---
     if (useSingleSourceIsotropic) {
         G4ThreeVector sourcePos(0, 0, 0); // or any desired position
@@ -145,6 +210,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         fParticleGun->SetParticleEnergy(240 * MeV);
         fParticleGun->GeneratePrimaryVertex(anEvent);
     }
+<<<<<<< HEAD
 
 
     if (useMoireSource) {
@@ -241,4 +307,6 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         }
     }
 
+=======
+>>>>>>> 6019b63 (new update)
 }

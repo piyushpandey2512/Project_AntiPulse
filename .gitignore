@@ -10,3 +10,5 @@ output/*.png
 stl_geometry/
 *.STEP
 *.stl
+*.dat
+*.root
