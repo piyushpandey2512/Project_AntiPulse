@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 build/
 <<<<<<< HEAD
 
@@ -18,7 +19,17 @@ output/*.dat
 build/*.root
 stl_geometry/*.stl
 >>>>>>> 3dcb7f1 (new changes)
+=======
+# Ignore build folder
+build/
+>>>>>>> f4e4889 (Stop tracking large files and update .gitignore)
 
-# File types to ignore
+# Ignore output files and large root files
+output/*.root
+output/*.dat
+output/*.png
+
+# Ignore geometry files
+stl_geometry/
 *.STEP
 *.stl
