@@ -1,4 +1,8 @@
 build/
 stl_geometry/
+output/*.root
+output/*.dat
+output/*.png
 *.STEP
 *.stl
+
