@@ -1,8 +1,12 @@
+# Ignore build folder
 build/
-stl_geometry/
+
+# Ignore output files and large root files
 output/*.root
 output/*.dat
 output/*.png
+
+# Ignore geometry files
+stl_geometry/
 *.STEP
 *.stl
-
