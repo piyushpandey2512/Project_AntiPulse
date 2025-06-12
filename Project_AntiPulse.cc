@@ -18,6 +18,12 @@
 
 int main(int argc, char** argv)
 {
+
+
+	std::cout << "argc = " << argc << std::endl;
+	for (int i = 0; i < argc; ++i) {
+		std::cout << "argv[" << i << "] = " << argv[i] << std::endl;
+	}
 		G4RunManager *runManager = new G4RunManager();
         runManager->SetUserInitialization(new MyDetectorConstruction());
 		
@@ -54,8 +60,8 @@ int main(int argc, char** argv)
 		}
 
 
-	// G4VisManager *visManager = new G4VisExecutive();
-	// visManager->Initialize();
+	G4VisManager *visManager = new G4VisExecutive();
+	visManager->Initialize();
 	
 
 	if(ui)
@@ -69,6 +75,7 @@ int main(int argc, char** argv)
 		{
 			G4String command ="/control/execute ";
 			G4String filename= argv[1];
+			G4cout << "Executing macro file: " << filename << G4endl;
 			UImanager->ApplyCommand(command+filename);
 		}
 	

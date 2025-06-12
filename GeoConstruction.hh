@@ -9,6 +9,7 @@
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4GenericMessenger.hh"
 
 #include "SensitiveDet.hh"
 
@@ -27,6 +28,11 @@ class MyDetectorConstruction : public G4VUserDetectorConstruction
     G4double GetGap() const { return gap; }
     const std::vector<G4ThreeVector>& GetSources() const { return sources; }
 
+	
+	void STLgeometry();
+	void ConstructFourModuleSetup();
+	void ConstructTestScintillator();
+
 private:
 	G4LogicalVolume* logicBGO;
 	G4LogicalVolume* fScinLog = nullptr;
@@ -44,9 +50,28 @@ private:
     G4double gap;
 
 	G4LogicalVolume* fWorldLogical = nullptr;
-	virtual void ConstructSDandField();
-	
+	virtual void ConstructSDandField();	
+	G4Material* Gal_mat = nullptr;
+
+	void DefineMaterials();
+	G4Material *mat304steel;
+
+
 	G4Material* fScinMaterial = nullptr;
+
+	G4double wRadius;
+	G4double wLength;
+	G4String wName;
+	G4GenericMessenger* fMessenger = nullptr;
+
+	G4Box *oneScinBox, *scinBox;
+	G4VSolid* wSolid;
+	G4VPhysicalVolume* physWorld;
+	G4LogicalVolume *oneScinLogical, *scinLogical, *wLogic;
+	G4bool isFourModuleSetup, isTestScintillator, isSTLGeometry;
+
+	G4VisAttributes* visAttScin = nullptr;
+	G4VisAttributes* visAttScinInModule = nullptr;
 
 };
 
