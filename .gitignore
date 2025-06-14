@@ -1,35 +1,10 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
+# Ignore build directory
 build/
-<<<<<<< HEAD
 
-# Ignore output files and large root files
-output/*.root
-output/*.dat
-output/*.png
 
-# Ignore geometry files
-=======
-output/
->>>>>>> dad8b89 (New changes)
-stl_geometry/
-output/
-=======
-output/*.dat
-build/*.root
-stl_geometry/*.stl
->>>>>>> 3dcb7f1 (new changes)
-=======
-# Ignore build folder
-build/
->>>>>>> f4e4889 (Stop tracking large files and update .gitignore)
-
-# Ignore output files and large root files
-output/*.root
-output/*.dat
-output/*.png
-
-# Ignore geometry files
-stl_geometry/
-*.STEP
+# Ignore all .root, .dat, .png files everywhere
+*.root
+*.dat
+*.png
 *.stl
+*.STEP
