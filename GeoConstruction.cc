@@ -10,17 +10,8 @@ G4bool overlapCheck = false;
 
 // Toggle these to select the setup you want
 bool useSTLGeometry = true;
-<<<<<<< HEAD
-<<<<<<< HEAD
 bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = true;
-=======
-bool useFourModuleSetup = true;
->>>>>>> 6019b63 (new update)
-=======
-bool useFourModuleSetup = false;
-bool useFourModuleSetupNewFEE = true;
->>>>>>> 012bc44 (new changes)
 bool useTestScintillator = false;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
@@ -75,14 +66,10 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double moduleHalfY = moduleTotalY/2.0;
 
         std::vector<G4ThreeVector> modulePositions = {
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 012bc44 (new changes)
-            G4ThreeVector(15.8*cm, 0, 45*cm),  // Right Front starts at x = 14.55 cm and ends at x = 17.05 cm
-            G4ThreeVector(23.8*cm, 0, 45*cm),  // Right Front starts at x = 22.55 cm and ends at x = 25.05 cm
-            G4ThreeVector(15.8*cm, 0, -45*cm), // Left Front starts at x = 14.55 cm and ends at x = 17.05 cm
-            G4ThreeVector(23.8*cm, 0, -45*cm)  // Left Front starts at x = 22.55 cm and ends at x = 25.05 cm
+            G4ThreeVector(15.8*cm, 0, 45*cm),
+            G4ThreeVector(23.8*cm, 0, 45*cm),
+            G4ThreeVector(15.8*cm, 0, -45*cm),
+            G4ThreeVector(23.8*cm, 0, -45*cm)
         };
 
         for (size_t m = 0; m < modulePositions.size(); m++) {
@@ -111,19 +98,10 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double moduleHalfY = moduleTotalY/2.0;
 
         std::vector<G4ThreeVector> modulePositions = {
-            G4ThreeVector(15.8*cm, 0, 27*cm),  // Right Front starts at x = 14.55 cm and ends at x = 17.05 cm
-            G4ThreeVector(25.8*cm, 0, 27*cm),  // Right Front starts at x = 22.55 cm and ends at x = 25.05 cm
-            G4ThreeVector(15.8*cm, 0, -27*cm), // Left Front starts at x = 14.55 cm and ends at x = 17.05 cm
-            G4ThreeVector(25.8*cm, 0, -27*cm)  // Left Front starts at x = 22.55 cm and ends at x = 25.05 cm
-<<<<<<< HEAD
-=======
-            G4ThreeVector(15.8*cm, 0, 45*cm),
-            G4ThreeVector(23.8*cm, 0, 45*cm),
-            G4ThreeVector(15.8*cm, 0, -45*cm),
-            G4ThreeVector(23.8*cm, 0, -45*cm)
->>>>>>> 6019b63 (new update)
-=======
->>>>>>> 012bc44 (new changes)
+            G4ThreeVector(15.8*cm, 0, 30*cm),
+            G4ThreeVector(25.8*cm, 0, 30*cm),
+            G4ThreeVector(15.8*cm, 0, -30*cm),
+            G4ThreeVector(25.8*cm, 0, -30*cm)
         };
 
         for (size_t m = 0; m < modulePositions.size(); m++) {
@@ -147,47 +125,45 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         oneScinLogical->SetVisAttributes(visAttScin);
 
         G4ThreeVector oneScinPos1(10*cm, 0, 0);
-        G4ThreeVector oneScinPos2(20*cm, 0, 0);
+        // G4ThreeVector oneScinPos2(20*cm, 0, 0);
 
         new G4PVPlacement(0, oneScinPos1, oneScinLogical, "OneScintillator1", wLogic, false, 0, overlapCheck);
-        new G4PVPlacement(0, oneScinPos2, oneScinLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
+        // new G4PVPlacement(0, oneScinPos2, oneScinLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
     }
 
     return physWorld;
 }
 
-
 void MyDetectorConstruction::DefineMaterials()
 {
     // --- Material and Element Definitions ---
-  G4NistManager *nist = G4NistManager::Instance();
+    G4NistManager *nist = G4NistManager::Instance();
 
+    // Elements
+    G4Element* elH  = nist->FindOrBuildElement("H");
+    G4Element* elC  = nist->FindOrBuildElement("C");
+    G4Element* elO  = nist->FindOrBuildElement("O");
+    G4Element* elSi = nist->FindOrBuildElement("Si");
+    G4Element* elMn = nist->FindOrBuildElement("Mn");
+    G4Element* elCr = nist->FindOrBuildElement("Cr");
+    G4Element* elNi = nist->FindOrBuildElement("Ni");
+    G4Element* elFe = nist->FindOrBuildElement("Fe");
 
-  // Elements
-  G4Element* elH  = nist->FindOrBuildElement("H");
-  G4Element* elC  = nist->FindOrBuildElement("C");
-  G4Element* elO  = nist->FindOrBuildElement("O");
-  G4Element* elSi = nist->FindOrBuildElement("Si");
-  G4Element* elMn = nist->FindOrBuildElement("Mn");
-  G4Element* elCr = nist->FindOrBuildElement("Cr");
-  G4Element* elNi = nist->FindOrBuildElement("Ni");
-  G4Element* elFe = nist->FindOrBuildElement("Fe");
+    // Materials
+    G4Material *volMatWorld = nist->FindOrBuildMaterial("G4_AIR");
+    Gal_mat     = nist->FindOrBuildMaterial("G4_Galactic");
 
-  // Materials
-  G4Material *volMatWorld = nist->FindOrBuildMaterial("G4_AIR");
-  Gal_mat     = nist->FindOrBuildMaterial("G4_Galactic");
+    // Define Stainless steel 304
+    G4double density = 7.999*g/cm3;
+    mat304steel = new G4Material("Stainless steel 304", density, 6);
+    mat304steel->AddElement(elMn, 0.02);
+    mat304steel->AddElement(elSi, 0.01);
+    mat304steel->AddElement(elCr, 0.19);
+    mat304steel->AddElement(elNi, 0.10);
+    mat304steel->AddElement(elFe, 0.6792);
+    mat304steel->AddElement(elC, 0.0008);
 
-  // Define Stainless steel 304
-  G4double density = 7.999*g/cm3;
-  mat304steel = new G4Material("Stainless steel 304", density, 6);
-  mat304steel->AddElement(elMn, 0.02);
-  mat304steel->AddElement(elSi, 0.01);
-  mat304steel->AddElement(elCr, 0.19);
-  mat304steel->AddElement(elNi, 0.10);
-  mat304steel->AddElement(elFe, 0.6792);
-  mat304steel->AddElement(elC, 0.0008);
-
-  // Define plastic scintillator material (vinyl-toluene)
+    // Define plastic scintillator material (vinyl-toluene)
     fScinMaterial = nist->FindOrBuildMaterial("G4_PLASTIC_SC_VINYLTOLUENE");    
 
     // Colors for visualization
@@ -197,17 +173,14 @@ void MyDetectorConstruction::DefineMaterials()
     visAttScin->SetForceSolid(true);
 }
 
-
-
 void MyDetectorConstruction::ConstructSDandField()
 {
-  // sensitive detector instance for the scintillators.
+    // sensitive detector instance for the scintillators.
+    MySensitiveDetector *scintSD = new MySensitiveDetector("ScintillatorSD");
+    if (fScintLogical != NULL)
+        fScintLogical->SetSensitiveDetector(scintSD);
 
-  MySensitiveDetector *scintSD = new MySensitiveDetector("ScintillatorSD");
-  if (fScintLogical != NULL)
-    fScintLogical->SetSensitiveDetector(scintSD);
-
-  MySensitiveDetector *oneScinSD = new MySensitiveDetector("oneScinSD");
-  if (oneScinLogical != NULL)
-    oneScinLogical->SetSensitiveDetector(oneScinSD);
+    MySensitiveDetector *oneScinSD = new MySensitiveDetector("oneScinSD");
+    if (oneScinLogical != NULL)
+        oneScinLogical->SetSensitiveDetector(oneScinSD);
 }

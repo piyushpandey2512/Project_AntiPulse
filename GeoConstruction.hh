@@ -28,11 +28,6 @@ class MyDetectorConstruction : public G4VUserDetectorConstruction
     G4double GetGap() const { return gap; }
     const std::vector<G4ThreeVector>& GetSources() const { return sources; }
 
-	
-	void STLgeometry();
-	void ConstructFourModuleSetup();
-	void ConstructTestScintillator();
-
 private:
 	G4LogicalVolume* logicBGO;
 	G4LogicalVolume* fScinLog = nullptr;

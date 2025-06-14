@@ -15,7 +15,7 @@
 #/vis/modeling/trajectories/drawByParticleID-0/set pi+ yellow
 
 # Accumulate tracks across events
-# /vis/scene/endOfEventAction accumulate
+/vis/scene/endOfEventAction accumulate
 
 # Manual viewer refresh after events run
 /vis/viewer/refresh
