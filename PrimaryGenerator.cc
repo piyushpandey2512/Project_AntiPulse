@@ -5,9 +5,9 @@
 #include "G4RunManager.hh"
 
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
-bool useThreeSourceCone = false;
+bool useThreeSourceCone = true;
 bool useConeSourceTowardScintillator = false;
-bool useMoireSource = true;
+bool useMoireSource = false;
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -33,12 +33,16 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
     // --- 3-source cone emission with correct particle mix and energies ---
     if (useThreeSourceCone) {
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+
+        // Define three fixed source positions
         std::vector<G4ThreeVector> sourcePositions = {
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 49.9 * cm),
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 49.9 * cm)
+            stlPosition,
+            stlPosition + G4ThreeVector(0, 0, 49.9 * cm),
+            stlPosition + G4ThreeVector(0, 0, -49.9 * cm)
         };
 
+        // Calculate average module center for cone axis
         std::vector<G4ThreeVector> moduleCenters = {
             G4ThreeVector(15.8*cm, 0, 45*cm),
             G4ThreeVector(23.8*cm, 0, 45*cm),
@@ -54,24 +58,31 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
         G4double coneHalfAngle = 70.0 * deg;
 
-        // 3D box dimensions
-        G4double boxX = 7.0 * cm;
-        G4double boxY = 7.0 * cm;
-        G4double boxZ = 250.0 * micrometer;
-
         for (const auto& sourceCenter : sourcePositions) {
-            // Random position within the box centered at sourceCenter
-            G4double rx = (G4UniformRand() - 0.5) * boxX;
-            G4double ry = (G4UniformRand() - 0.5) * boxY;
-            G4double rz = (G4UniformRand() - 0.5) * boxZ;
-            G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+            // Set position
+            fParticleGun->SetParticlePosition(sourceCenter);
 
-            fParticleGun->SetParticlePosition(sourcePos);
+            // Select particle type based on annihilation ratios (same as useMoireSource)
+            G4ParticleDefinition* particle;
+            G4double energy;
+            G4double rand = G4UniformRand();
 
-            // Calculate the cone axis (direction toward the average module center)
-            G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+            if (rand < 0.60) { // Charged pions (60%)
+                particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+                energy = 230 * MeV;
+            } else if (rand < 0.80) { // Neutral pions (20%)
+                particle = piZero;
+                energy = 230 * MeV;
+            } else if (rand < 0.96) { // Charged kaons (16%)
+                particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+                energy = 150 * MeV + 250 * MeV * G4UniformRand();
+            } else {
+                continue; // Skip eta (neutral, undetectable)
+            }
 
-            // Generate a random direction within the cone
+            // Emit in cone toward module center
+            G4ThreeVector coneAxis = (avgModuleCenter - sourceCenter).unit();
+
             G4double cosTheta = std::cos(coneHalfAngle);
             G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
             G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
@@ -81,19 +92,15 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
                 sinTheta * std::sin(phi),
                 randomCosTheta);
 
-            // Rotate the random direction to align with the cone axis
             G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-            // Set the particle momentum direction
-            fParticleGun->SetParticleMomentumDirection(finalDirection);
-
-            // Set the particle energy
-            fParticleGun->SetParticleEnergy(240 * MeV);
-
-            // Generate the primary vertex
+            fParticleGun->SetParticleDefinition(particle);
+            fParticleGun->SetParticleMomentumDirection(finalDirection.unit());
+            fParticleGun->SetParticleEnergy(energy);
             fParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
+
 
     if (useConeSourceTowardScintillator) {
         // Scintillator center
@@ -118,9 +125,9 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
                                 cosTheta);  // direction in local (+x) frame
 
         // Rotate direction to align with +x axis
-        G4RotationMatrix rotToX;
-        rotToX.rotateY(-90.0 * deg); // align default +z cone to +x
-        direction = rotToX * direction;
+        // G4RotationMatrix rotToX;
+        // rotToX.rotateY(-90.0 * deg); // align default +z cone to +x
+        // direction = rotToX * direction;
 
         fParticleGun->SetParticleDefinition(piPlus); // Set particle type
         fParticleGun->SetParticleMomentumDirection(direction.unit());
@@ -130,11 +137,25 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
 
     if (useMoireSource) {
-        std::vector<G4ThreeVector> sourcePositions = {
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm),
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm + 50 * cm),
-            G4ThreeVector(-8.0 * cm, 3.5 * cm, 8.0 * cm - 50 * cm)
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+
+        // G4RotationMatrix stlRotation;
+        // stlRotation.rotateX(90.0 * deg);
+
+        // 2. Define source positions in the STL's *local* frame
+        std::vector<G4ThreeVector> localSourcePositions = {
+            G4ThreeVector(0, 0, 0),                  // Center of STL
+            G4ThreeVector(0, 0, 49.9 * cm),          // Offset along STL local Z
+            G4ThreeVector(0, 0, -49.9 * cm)          // Offset along STL local -Z
         };
+
+        // 3. Transform local positions to world coordinates
+        std::vector<G4ThreeVector> sourcePositions;
+        for (const auto& localPos : localSourcePositions) {
+            G4ThreeVector worldPos = localPos + stlPosition;
+            sourcePositions.push_back(worldPos);
+        }
+
 
         G4double boxX = 7.0 * cm;
         G4double boxY = 7.0 * cm;
