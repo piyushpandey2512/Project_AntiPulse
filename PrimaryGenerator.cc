@@ -8,6 +8,7 @@
 bool useThreeSourceCone = true;
 bool useConeSourceTowardScintillator = false;
 bool useMoireSource = false;
+bool useTestSingleSource = false;
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -33,7 +34,9 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
     // --- 3-source cone emission with correct particle mix and energies ---
     if (useThreeSourceCone) {
-        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        // G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        G4ThreeVector stlPosition(0, 0, 0); // For testing, using origin
+
 
         // Define three fixed source positions
         std::vector<G4ThreeVector> sourcePositions = {
@@ -43,11 +46,18 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         };
 
         // Calculate average module center for cone axis
+        // std::vector<G4ThreeVector> moduleCenters = {
+        //     G4ThreeVector(15.8*cm, 0, 45*cm),
+        //     G4ThreeVector(23.8*cm, 0, 45*cm),
+        //     G4ThreeVector(15.8*cm, 0, -45*cm),
+        //     G4ThreeVector(23.8*cm, 0, -45*cm)
+        // };
+
         std::vector<G4ThreeVector> moduleCenters = {
-            G4ThreeVector(15.8*cm, 0, 45*cm),
-            G4ThreeVector(23.8*cm, 0, 45*cm),
-            G4ThreeVector(15.8*cm, 0, -45*cm),
-            G4ThreeVector(23.8*cm, 0, -45*cm)
+            G4ThreeVector(10 * cm, 0, 30 * cm),
+            G4ThreeVector(20 * cm, 0, 30 * cm),
+            G4ThreeVector(10 * cm, 0, -30 * cm),
+            G4ThreeVector(20 * cm, 0, -30 * cm)
         };
 
         G4ThreeVector avgModuleCenter(0, 0, 0);
@@ -56,7 +66,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         }
         avgModuleCenter /= moduleCenters.size();
 
-        G4double coneHalfAngle = 70.0 * deg;
+        G4double coneHalfAngle = 110.0 * deg;
 
         for (const auto& sourceCenter : sourcePositions) {
             // Set position
@@ -67,17 +77,20 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
             G4double energy;
             G4double rand = G4UniformRand();
 
-            if (rand < 0.60) { // Charged pions (60%)
+            if (rand < 0.60) { // Charged pions (60% of total)
                 particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
-                energy = 230 * MeV;
-            } else if (rand < 0.80) { // Neutral pions (20%)
-                particle = piZero;
-                energy = 230 * MeV;
-            } else if (rand < 0.96) { // Charged kaons (16%)
+                energy = 230 * MeV; // Average kinetic energy
+            }
+            else if (rand < 0.80) { // Neutral pions (40% of total)
+                particle = particleTable->FindParticle("pi0");
+                energy = 230 * MeV; // Same average energy as charged
+            }
+            else if (rand < 0.96) { // Charged kaons (16% of total)
                 particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
-                energy = 150 * MeV + 250 * MeV * G4UniformRand();
-            } else {
-                continue; // Skip eta (neutral, undetectable)
+                energy = 150*MeV + 250*MeV*G4UniformRand(); // Uniform distribution
+            }
+            else { // Eta mesons (4% - neutral, not detected)
+                continue; // Skip neutral particles for charged detection
             }
 
             // Emit in cone toward module center
@@ -208,4 +221,40 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
             fParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
+
+    if (useTestSingleSource) {
+        // Test source at a fixed position
+        G4ThreeVector sourcePosition(0, 0, 0); // Center of the world volume
+        fParticleGun->SetParticlePosition(sourcePosition);
+
+        // Select particle type based on annihilation ratios
+        G4ParticleDefinition* particle;
+        G4double energy;
+        G4double rand = G4UniformRand();
+        
+        if (rand < 0.60) { // Charged pions (60% of total)
+            particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+            energy = 230 * MeV; // Average kinetic energy
+        }
+        else if (rand < 0.80) { // Neutral pions (40% of total)
+            particle = particleTable->FindParticle("pi0");
+            energy = 230 * MeV; // Same average energy as charged
+        }
+        else if (rand < 0.96) { // Charged kaons (16% of total)
+            particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+            energy = 150*MeV + 250*MeV*G4UniformRand(); // Uniform distribution
+        }
+        else { // Eta mesons (4% - neutral, not detected)
+            return; // Skip neutral particles for charged detection
+        }
+
+        // Set particle type and energy
+        fParticleGun->SetParticleDefinition(particle);
+        fParticleGun->SetParticleEnergy(energy);
+
+        fParticleGun->SetParticleMomentumDirection((G4ThreeVector(1, 0, 0)).unit()); // Forward direction
+        fParticleGun->GeneratePrimaryVertex(anEvent);
+    }
+
+
 }

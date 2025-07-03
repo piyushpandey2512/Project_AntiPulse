@@ -9,10 +9,11 @@
 G4bool overlapCheck = false;
 
 // Toggle these to select the setup you want
-bool useSTLGeometry = true;
+bool useSTLGeometry = false;
 bool useFourModuleSetup = false;
-bool useFourModuleSetupNewFEE = true;
+bool useFourModuleSetupNewFEE = false;
 bool useTestScintillator = false;
+bool useTestModulesSetup = true;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
 
@@ -85,6 +86,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     // --- Four Module Setup (Modified with new FEE) ---
     if (useFourModuleSetupNewFEE) {
         G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 
@@ -98,11 +101,19 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double moduleHalfY = moduleTotalY/2.0;
 
         std::vector<G4ThreeVector> modulePositions = {
-            G4ThreeVector(15.8*cm, 0, 30*cm),
+            G4ThreeVector(15.8*cm, 0, 30*cm),  
             G4ThreeVector(25.8*cm, 0, 30*cm),
             G4ThreeVector(15.8*cm, 0, -30*cm),
             G4ThreeVector(25.8*cm, 0, -30*cm)
         };
+
+            // Front modules at x = 17 cm, back modules at x = 32 cm (15 cm apart)
+        // std::vector<G4ThreeVector> modulePositions = {
+        //     G4ThreeVector(17*cm, 0,  30*cm), // front right
+        //     G4ThreeVector(32*cm, 0,  30*cm), // back right
+        //     G4ThreeVector(17*cm, 0, -30*cm), // front left
+        //     G4ThreeVector(32*cm, 0, -30*cm)  // back left
+        // };
 
         for (size_t m = 0; m < modulePositions.size(); m++) {
             G4ThreeVector modCenter = modulePositions[m];
@@ -116,7 +127,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     // --- Single Test Scintillator ---
     if (useTestScintillator) {
-        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; // test for energy deposition with double width
+        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 
@@ -129,6 +142,47 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
         new G4PVPlacement(0, oneScinPos1, oneScinLogical, "OneScintillator1", wLogic, false, 0, overlapCheck);
         // new G4PVPlacement(0, oneScinPos2, oneScinLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
+    }
+
+    if (useTestModulesSetup) {
+        // G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfY = 0.6*cm / 2.0;
+        G4double scinHalfZ = 50.0*cm / 2.0;
+
+        G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
+        fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
+        fScintLogical->SetVisAttributes(visAttScin);
+
+        G4double gap = 0.1*cm;
+        G4double fullScinY = 2*scinHalfY;
+        G4double moduleTotalY = 13*(fullScinY + gap) - gap;
+        G4double moduleHalfY = moduleTotalY/2.0;
+
+        std::vector<G4ThreeVector> modulePositions = {
+            G4ThreeVector(10*cm, 0, 30*cm),  
+            G4ThreeVector(20*cm, 0, 30*cm),
+            G4ThreeVector(10*cm, 0, -30*cm),
+            G4ThreeVector(20*cm, 0, -30*cm)
+        };
+
+            // Front modules at x = 17 cm, back modules at x = 32 cm (15 cm apart)
+        // std::vector<G4ThreeVector> modulePositions = {
+        //     G4ThreeVector(17*cm, 0,  30*cm), // front right
+        //     G4ThreeVector(32*cm, 0,  30*cm), // back right
+        //     G4ThreeVector(17*cm, 0, -30*cm), // front left
+        //     G4ThreeVector(32*cm, 0, -30*cm)  // back left
+        // };
+
+        for (size_t m = 0; m < modulePositions.size(); m++) {
+            G4ThreeVector modCenter = modulePositions[m];
+            for (G4int j = 0; j < 13; j++) {
+                G4double localY = -moduleHalfY + scinHalfY + j * (fullScinY + gap);
+                G4ThreeVector scintPos = modCenter + G4ThreeVector(0, localY, 0);
+                new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
+            }
+        }
     }
 
     return physWorld;

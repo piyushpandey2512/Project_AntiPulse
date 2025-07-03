@@ -23,13 +23,13 @@ bool isLeftFront(int copyNo)  { return copyNo >= 200 && copyNo <= 212; }
 bool isLeftBack(int copyNo)   { return copyNo >= 300 && copyNo <= 312; }
 
 int main() {
-    std::ifstream inFile("FilteredScintillator_pi+_in_Xonly.dat");
+    std::ifstream inFile("FilteredEvent_20250626_200400_10lac_allPions.dat");
     if (!inFile.is_open()) {
-        std::cerr << "Error opening FilteredScintillator_pi+_in_Xonly.dat" << std::endl;
+        std::cerr << "Error opening FilteredEvent_20250626_200400_10lac_allPions.dat" << std::endl;
         return 1;
     }
 
-    TFile* outFile = new TFile("ReconstructedVertices_trackID_Corr.root", "RECREATE");
+    TFile* outFile = new TFile("ReconstructedVertices_20250626_200400_10lac_allPions.root", "RECREATE");
     TTree* tree = new TTree("Vertices", "Extrapolated vertex positions");
 
     double y_proj, z_proj;

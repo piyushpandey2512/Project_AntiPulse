@@ -62,7 +62,6 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4StepPoint* preStepPoint  = step->GetPreStepPoint();
     G4StepPoint* postStepPoint = step->GetPostStepPoint();
     G4VPhysicalVolume* volume  = preStepPoint->GetPhysicalVolume();
-    if (!volume) return;
 
     G4String volumeName = volume->GetName();
     G4int copyNumber = volume->GetCopyNo();
@@ -140,5 +139,30 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     // Accumulate total energy deposition
     if (energyDep > 0.) {
         fEventAction->AddEnergyDep(energyDep);
+
+         const G4VProcess* process = postStepPoint->GetProcessDefinedStep();
+        G4String procName = process ? process->GetProcessName() : "None";
+
+        // Map process name to bin index
+        int procIndex = 0;
+        if      (procName == "Transportation")    procIndex = 0;
+        else if (procName == "compt")             procIndex = 1;
+        else if (procName == "conv")              procIndex = 2;
+        else if (procName == "hadElastic")        procIndex = 3;
+        else if (procName == "hIoni")             procIndex = 4;
+        else if (procName == "Decay")             procIndex = 5;
+        else if (procName == "CoulombScat")       procIndex = 6;
+        else if (procName == "msc")               procIndex = 7;
+        else if (procName == "phot")              procIndex = 8;
+        else if (procName == "pi+Inelastic")      procIndex = 9;
+        else if (procName == "pi-Inelastic")      procIndex = 10;
+        else if (procName == "kaon-Inelastic")    procIndex = 11;
+        else if (procName == "kaon+Inelastic")    procIndex = 12;
+        // else leave as 0 for unknown
+
+        auto* manager = G4AnalysisManager::Instance();
+        manager->FillH2(manager->GetH2Id("Edep2DByProcess"), procIndex, energyDep / MeV);
+
+
     }
 }

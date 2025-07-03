@@ -68,10 +68,10 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     // Create histograms
     CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers (Copy Number)", 400, 0, 400);
     CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions (MeV)", 100, 0, 10);
-    CreateHistogramWithTitles(manager, "AngularDeviation", "Angular Deviation of Pion Tracks (deg)", 100, 0, 20);
-    manager->CreateH2("OriginYZ", "Extrapolated origin at x = 0",
-        200, -100, 100,   // z
-        200, -20, 20);    // y
+    // CreateHistogramWithTitles(manager, "AngularDeviation", "Angular Deviation of Pion Tracks (deg)", 100, 0, 20);
+    manager->CreateH2("Edep2DByProcess", "Energy Deposition by Process;Process Index;Edep (MeV)",
+                    13, 0, 13,    // 13 process types, bins 0-12
+                    100, 0, 10);  // 0-10 MeV, 100 bins
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)

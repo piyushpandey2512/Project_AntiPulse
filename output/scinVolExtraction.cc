@@ -8,8 +8,8 @@
 #include <algorithm>
 
 int main() {
-    std::ifstream inFile("PionInteractions_20250609_142020_notSTL_1Cr.dat");
-    std::ofstream outFile("FilteredEvent_notSTL_1Cr.dat");
+    std::ifstream inFile("PionInteractions_20250627_214333_1Cr.dat");
+    std::ofstream outFile("FilteredEvent_20250627_214333_1Cr.dat");
 
     if (!inFile.is_open() || !outFile.is_open()) {
         std::cerr << "Error opening files!" << std::endl;
@@ -32,9 +32,13 @@ int main() {
         // Filter conditions
         if (fields.size() >= 17 &&
             fields[6] == "Scintillator" &&
-            fields[5] == "pi+" &&
-            fields[8] == "in" &&
-            (fields[9] == "14.550" || fields[9] == "22.550")) {
+            (
+                fields[5] == "pi+" ||
+                fields[5] == "pi-" ||
+                fields[5] == "kaon+" ||
+                fields[5] == "kaon-"
+            ) && fields[8] == "in" &&
+            (fields[9] == "14.550" || fields[9] == "24.550")) {
 
             long long eventID = std::stoll(fields[0]);
             eventMap[eventID].push_back(line);
