@@ -13,7 +13,8 @@ bool useSTLGeometry = false;
 bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = false;
 bool useTestScintillator = false;
-bool useTestModulesSetup = true;
+bool useTestModulesSetup = false;
+bool useTwoScinB2B = true;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
 
@@ -145,9 +146,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useTestModulesSetup) {
-        // G4double scinHalfX = 2.5*cm / 2.0;
-        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
-        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfX = 2.5*cm / 2.0;
+        // // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 
@@ -183,6 +184,25 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
                 new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
             }
         }
+    }
+
+    if (useTwoScinB2B) {
+        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfY = 0.6*cm / 2.0;
+        G4double scinHalfZ = 50.0*cm / 2.0;
+
+        G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
+        fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
+        fScintLogical->SetVisAttributes(visAttScin);
+
+        G4ThreeVector oneScinPos1(10*cm, 0, 0);
+        G4ThreeVector oneScinPos2(20*cm, 0, 0);
+
+        new G4PVPlacement(0, oneScinPos1, fScintLogical, "OneScintillator1", wLogic, false, 0, overlapCheck);
+        new G4PVPlacement(0, oneScinPos2, fScintLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
+
     }
 
     return physWorld;

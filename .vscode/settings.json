@@ -84,6 +84,9 @@
         "format": "cpp",
         "span": "cpp",
         "variant": "cpp",
-        "viewReconsHist.C": "cpp"
+        "viewReconsHist.C": "cpp",
+        "compareHistos.C": "cpp",
+        "overlayHistos.C": "cpp",
+        "compareEnergyDeps.C": "cpp"
     }
 }

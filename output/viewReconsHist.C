@@ -1,5 +1,11 @@
+#include <TFile.h>
+#include <TH2D.h>
+#include <TCanvas.h>
+#include <TStyle.h>
+#include <iostream>
+
 void viewReconsHist() {
-    TFile* f = TFile::Open("ReconstructedVertices.root");
+    TFile* f = TFile::Open("ReconstructedVertices_20250627_214333_1Cr.root");
     if (!f || f->IsZombie()) {
         std::cout << "Error opening ROOT file\n";
         return;

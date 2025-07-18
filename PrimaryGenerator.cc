@@ -5,8 +5,8 @@
 #include "G4RunManager.hh"
 
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
-bool useThreeSourceCone = true;
-bool useConeSourceTowardScintillator = false;
+bool useThreeSourceCone = false;
+bool useConeSourceTowardScintillator = true;
 bool useMoireSource = false;
 bool useTestSingleSource = false;
 
@@ -116,35 +116,52 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
 
     if (useConeSourceTowardScintillator) {
-        // Scintillator center
-        G4ThreeVector scintillatorCenter(10.0 * cm, 0, 0);
+        // Scintillator parameters
+        G4double scinCenterX = 10.0 * cm;
+        G4double scinCenterY = 0.0 * cm;
+        G4double scinCenterZ = 0.0 * cm;
+        G4double scinHalfY = 0.3 * cm;      // half-width in y (0.6 cm total)
+        G4double scinHalfZ = 25.0 * cm;     // half-length in z (50 cm total)
+        G4double offset = 0.01 * cm;        // small offset to be just outside
 
-        // Source position 10 cm before the scintillator along -x
-        G4ThreeVector sourcePos = scintillatorCenter - G4ThreeVector(10.0 * cm, 0, 0);
+        // Source at the origin
+        G4ThreeVector sourcePos(0, 0, 0);
+
+        // Randomly pick a point on the +y face of the scintillator
+        G4double randZ = scinCenterZ + (2.0 * scinHalfZ) * (G4UniformRand() - 0.5);
+        G4double randX = scinCenterX; // always center in x for this face
+        G4double randY = scinCenterY + scinHalfY; // face at +y
+
+        G4ThreeVector targetPoint(randX, randY, randZ);
+
+        // Direction from source to target point
+        G4ThreeVector direction = (targetPoint - sourcePos).unit();
+
+        // Select particle type based on annihilation ratios
+        G4ParticleDefinition* particle;
+        G4double energy;
+        G4double rand = G4UniformRand();
+        
+        if (rand < 0.60) { // Charged pions (60% of total)
+            particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+            energy = 230 * MeV; // Average kinetic energy
+        }
+        else if (rand < 0.80) { // Neutral pions (40% of total)
+            particle = particleTable->FindParticle("pi0");
+            energy = 230 * MeV; // Same average energy as charged
+        }
+        else if (rand < 0.96) { // Charged kaons (16% of total)
+            particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+            energy = 150*MeV + 250*MeV*G4UniformRand(); // Uniform distribution
+        }
+        else { // Eta mesons (4% - neutral, not detected)
+            return; // Skip neutral particles for charged detection
+        }
+        fParticleGun->SetParticleDefinition(particle);
+        fParticleGun->SetParticleEnergy(energy);
         fParticleGun->SetParticlePosition(sourcePos);
-
-
-
-        // Cone emission around +x direction (toward scintillator)
-        // Max cone half-angle in radians (~68.2 degrees)
-        G4double thetaMax = std::atan(std::sqrt(std::pow(0.3 * cm, 2) + std::pow(25 * cm, 2)) / (10.0 * cm));
-
-        // Random direction within cone
-        G4double cosTheta = std::cos(thetaMax) + (1 - std::cos(thetaMax)) * G4UniformRand();  // cone sampling
-        G4double sinTheta = std::sqrt(1 - cosTheta * cosTheta);
-        G4double phi = 2.0 * CLHEP::pi * G4UniformRand();
-        G4ThreeVector direction(sinTheta * std::cos(phi),
-                                sinTheta * std::sin(phi),
-                                cosTheta);  // direction in local (+x) frame
-
-        // Rotate direction to align with +x axis
-        // G4RotationMatrix rotToX;
-        // rotToX.rotateY(-90.0 * deg); // align default +z cone to +x
-        // direction = rotToX * direction;
-
-        fParticleGun->SetParticleDefinition(piPlus); // Set particle type
-        fParticleGun->SetParticleMomentumDirection(direction.unit());
-        fParticleGun->SetParticleEnergy(240 * MeV);
+        fParticleGun->SetParticleMomentumDirection(direction);
+    
         fParticleGun->GeneratePrimaryVertex(anEvent);
     }
 
