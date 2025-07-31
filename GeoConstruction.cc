@@ -14,7 +14,9 @@ bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = false;
 bool useTestScintillator = false;
 bool useTestModulesSetup = false;
-bool useTwoScinB2B = true;
+bool useTwoScinB2B = false;
+bool useOneModule = false;
+bool useTwoB2BModules = true;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
 
@@ -187,9 +189,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useTwoScinB2B) {
-        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
-        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 
@@ -205,8 +207,76 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     }
 
+    if (useOneModule) {
+        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfY = 0.6*cm / 2.0;
+        G4double scinHalfZ = 50.0*cm / 2.0;
+        
+        G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
+        fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
+        fScintLogical->SetVisAttributes(visAttScin);
+
+        
+        G4double gap = 0.1*cm;
+        G4double fullScinY = 2*scinHalfY;
+        G4double moduleTotalY = 13*(fullScinY + gap) - gap;
+        G4double moduleHalfY = moduleTotalY/2.0;
+
+        std::vector<G4ThreeVector> modulePositions = {
+        G4ThreeVector(11.25*cm, 0, 0)
+        };
+
+
+        for (size_t m = 0; m < modulePositions.size(); m++) {
+        G4ThreeVector modCenter = modulePositions[m];
+        for (G4int j = 0; j < 13; j++) {
+            G4double localY = -moduleHalfY + scinHalfY + j * (fullScinY + gap);
+            G4ThreeVector scintPos = modCenter + G4ThreeVector(0, localY, 0);
+            new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
+        }
+    }
+
+    }
+
+    if (useTwoB2BModules){
+
+        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfY = 0.6*cm / 2.0;
+        G4double scinHalfZ = 50.0*cm / 2.0;
+
+                G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
+        fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
+        fScintLogical->SetVisAttributes(visAttScin);
+
+        
+        G4double gap = 0.1*cm;
+        G4double fullScinY = 2*scinHalfY;
+        G4double moduleTotalY = 13*(fullScinY + gap) - gap;
+        G4double moduleHalfY = moduleTotalY/2.0;
+
+        std::vector<G4ThreeVector> modulePositions = {
+        G4ThreeVector(11.25*cm, 0, 0),
+        G4ThreeVector(21.25*cm, 0, 0) // second module at x = 21.25 cm
+        };
+
+
+        for (size_t m = 0; m < modulePositions.size(); m++) {
+        G4ThreeVector modCenter = modulePositions[m];
+        for (G4int j = 0; j < 13; j++) {
+            G4double localY = -moduleHalfY + scinHalfY + j * (fullScinY + gap);
+            G4ThreeVector scintPos = modCenter + G4ThreeVector(0, localY, 0);
+            new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
+        }
+    }
+}
+
     return physWorld;
 }
+
 
 void MyDetectorConstruction::DefineMaterials()
 {
