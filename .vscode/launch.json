@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run ROOT Macro (.C file)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/piyush/softwares/root-6.34.00/install/bin/root",
+            "args": [
+                "-l", "-b", "-q", "${file}"
+            ],
+            "cwd": "${fileDirname}",
+            "stopAtEntry": false
+        }
+    ]
+}

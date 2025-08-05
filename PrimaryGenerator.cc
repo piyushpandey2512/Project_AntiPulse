@@ -7,9 +7,10 @@
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
 bool useThreeSourceCone = false;
 bool useConeSourceTowardScintillator = false;
-bool useMoireSource = false;
+bool useMoireSource = true;
 bool useTestSingleSource = false;
-bool useConeSourceTowardSingleModule = true;
+bool useConeSourceTowardSingleModule = false;
+bool useConeSourceTowardFourModules = false;
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -323,6 +324,69 @@ if (useConeSourceTowardSingleModule) {
         fParticleGun->SetParticleEnergy(energy);
 
         fParticleGun->SetParticleMomentumDirection((G4ThreeVector(1, 0, 0)).unit()); // Forward direction
+        fParticleGun->GeneratePrimaryVertex(anEvent);
+    }
+
+
+    if (useConeSourceTowardFourModules) {
+        // Module positions (same as geometry)
+        std::vector<G4ThreeVector> moduleCenters = {
+            G4ThreeVector(15.8*cm, 0,  30*cm),
+            G4ThreeVector(25.8*cm, 0,  30*cm),
+            G4ThreeVector(15.8*cm, 0, -30*cm),
+            G4ThreeVector(25.8*cm, 0, -30*cm)
+        };
+
+        // Compute average module center for cone axis
+        G4ThreeVector avgModuleCenter(0, 0, 0);
+        for (const auto& module : moduleCenters) {
+            avgModuleCenter += module;
+        }
+        avgModuleCenter /= moduleCenters.size();
+
+        // Source at origin
+        G4ThreeVector sourcePos(0, 0, 0);
+
+        // Cone half angle (adjust as needed, e.g. 30 deg)
+        G4double coneHalfAngle = 70.0 * deg;
+
+        // Select particle type based on annihilation ratios
+        G4ParticleDefinition* particle;
+        G4double energy;
+        G4double rand = G4UniformRand();
+
+        if (rand < 0.60) {
+            particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+            energy = 230 * MeV;
+        } else if (rand < 0.80) {
+            particle = particleTable->FindParticle("pi0");
+            energy = 230 * MeV;
+        } else if (rand < 0.96) {
+            particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+            energy = 150*MeV + 250*MeV*G4UniformRand();
+        } else {
+            return; // skip neutral
+        }
+
+        // Cone axis: from source to avg module center
+        G4ThreeVector coneAxis = (avgModuleCenter - sourcePos).unit();
+
+        // Sample direction within cone
+        G4double cosTheta = std::cos(coneHalfAngle);
+        G4double randomCosTheta = cosTheta + (1 - cosTheta) * G4UniformRand();
+        G4double sinTheta = std::sqrt(1 - randomCosTheta * randomCosTheta);
+        G4double phi = 2 * M_PI * G4UniformRand();
+        G4ThreeVector randomDirection(
+            sinTheta * std::cos(phi),
+            sinTheta * std::sin(phi),
+            randomCosTheta);
+
+        G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+
+        fParticleGun->SetParticleDefinition(particle);
+        fParticleGun->SetParticleEnergy(energy);
+        fParticleGun->SetParticlePosition(sourcePos);
+        fParticleGun->SetParticleMomentumDirection(finalDirection.unit());
         fParticleGun->GeneratePrimaryVertex(anEvent);
     }
 

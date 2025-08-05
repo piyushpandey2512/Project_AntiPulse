@@ -87,6 +87,7 @@
         "viewReconsHist.C": "cpp",
         "compareHistos.C": "cpp",
         "overlayHistos.C": "cpp",
-        "compareEnergyDeps.C": "cpp"
+        "compareEnergyDeps.C": "cpp",
+        "reconstruction_3D_Source.C": "cpp"
     }
 }

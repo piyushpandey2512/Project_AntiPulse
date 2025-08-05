@@ -1,12 +1,29 @@
 void compareEnergyDeps() {
     // Load your specific ROOT files
-    TFile *f_orig = TFile::Open("Project_AntiPulse_20250702_152407_OriginalWidth.root");
-    TFile *f_double = TFile::Open("Project_AntiPulse_20250702_154137_DoubleWidth.root");
-    TFile *f_half = TFile::Open("Project_AntiPulse_20250702_160346_HalfWidth.root");
 
-    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250703_131704_1Cr_FullModule__OriginalWidth.root");
-    // TFile *f_double = TFile::Open("Project_AntiPulse_20250703_145434_1Cr_FullModule__DoubleWidth.root");
-    // TFile *f_half = TFile::Open("Project_AntiPulse_20250703_155052_1Cr_FullModule__HalfWidth.root");
+
+    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250702_152407_OriginalWidth_singleScin.root");
+    // TFile *f_double = TFile::Open("Project_AntiPulse_20250702_154137_DoubleWidth_singleScin.root");
+    // TFile *f_half = TFile::Open("Project_AntiPulse_20250702_160346_HalfWidth_singleScin.root");
+
+    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250703_131704_1Cr_1FullModule__OriginalWidth.root");
+    // TFile *f_double = TFile::Open("Project_AntiPulse_20250703_145434_1Cr_1FullModule__DoubleWidth.root");
+    // TFile *f_half = TFile::Open("Project_AntiPulse_20250703_155052_1Cr_1FullModule__HalfWidth.root");
+
+    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250710_180914_50lac_2B2B_scin_Original_Width.root");
+    // TFile *f_double = TFile::Open("Project_AntiPulse_20250731_153207_50lac_2B2B_scin_Double_width.root");
+    // TFile *f_half = TFile::Open("Project_AntiPulse_20250731_154434_50lac_2B2B_scin_Half_width.root");
+
+    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250731_165536_50lac_Two_B2B_modules_Original_width.root");
+    // TFile *f_double = TFile::Open("Project_AntiPulse_20250731_171314_50lac_Two_B2B_modules_Double_width.root");
+    // TFile *f_half = TFile::Open("Project_AntiPulse_20250731_174323_50lac_Two_B2B_modules_Half_width.root");
+
+    TFile *f_orig = TFile::Open("Project_AntiPulse_20250805_161847_50lac_4FullModule_Original_width.root");
+    TFile *f_double = TFile::Open("Project_AntiPulse_20250805_163927_50lac_4FullModule_Double_width.root");
+    TFile *f_half = TFile::Open("Project_AntiPulse_20250805_165400_50lac_4FullModule_Half_width.root");
+
+
+
     // Get the histograms
     TH1 *h_orig = (TH1*)f_orig->Get("PionEnergyDep");
     TH1 *h_double = (TH1*)f_double->Get("PionEnergyDep");
@@ -26,8 +43,12 @@ void compareEnergyDeps() {
     h_double->SetLineWidth(2);
     h_half->SetLineWidth(2);
 
-    h_orig->SetTitle("PionEnergyDep (Normalized) for Single Scintillator;Deposited Energy (MeV);Normalized Counts");
-    // h_orig->SetTitle("PionEnergyDep (Normalized) for Four Module Setup;Deposited Energy (MeV);Normalized Counts");
+    // h_orig->SetTitle("PionEnergyDep For 1Scintillator (Normalized);Deposited Energy (MeV);Normalized Counts");
+    // h_orig->SetTitle("PionEnergyDep For 1FullModule (Normalized);Deposited Energy (MeV);Normalized Counts");
+    // h_orig->SetTitle("PionEnergyDep For 2B2B Scintillator (Normalized);Deposited Energy (MeV);Normalized Counts"); 
+    // h_orig->SetTitle("PionEnergyDep For 2B2B Modules (Normalized);Deposited Energy (MeV);Normalized Counts");
+    h_orig->SetTitle("PionEnergyDep For 4FullModules (Normalized);Deposited Energy (MeV);Normalized Counts");
+
 
     // Compute global Y max for scaling
     double maxY = std::max({h_orig->GetMaximum(), h_double->GetMaximum(), h_half->GetMaximum()});
@@ -79,39 +100,39 @@ void compareEnergyDeps() {
 
     // Draw three arrows and annotate with LaTeX text
 
-    // Arrow 1
-    TArrow *arr1 = new TArrow(4.54, 0.04, 5.0, 0.04, 0.02, "<|");
-    arr1->SetLineWidth(2);
-    arr1->SetArrowSize(0.02);
-    arr1->SetLineColor(kBlack);
-    arr1->SetFillColor(kBlack);
-    arr1->Draw();
-    TLatex *t1 = new TLatex(5.05, 0.04, "4.54 MeV");
-    t1->SetTextSize(0.03);
-    t1->Draw();
+    // // Arrow 1
+    // TArrow *arr1 = new TArrow(4.54, 0.04, 5.0, 0.04, 0.02, "<|");
+    // arr1->SetLineWidth(2);
+    // arr1->SetArrowSize(0.02);
+    // arr1->SetLineColor(kBlack);
+    // arr1->SetFillColor(kBlack);
+    // arr1->Draw();
+    // TLatex *t1 = new TLatex(5.05, 0.04, "4.54 MeV");
+    // t1->SetTextSize(0.03);
+    // t1->Draw();
 
-    // Arrow 2
-    TArrow *arr2 = new TArrow(9.25, 0.005, 9.7, 0.005, 0.02, "<|");
-    arr2->SetLineWidth(2);
-    arr2->SetArrowSize(0.02);
-    arr2->SetLineColor(kBlack);
-    arr2->SetFillColor(kBlack);
-    arr2->Draw();
-    TLatex *t2 = new TLatex(9.75, 0.005, "9.25 MeV");
-    t2->SetTextSize(0.03);
-    t2->Draw();
+    // // Arrow 2
+    // TArrow *arr2 = new TArrow(9.25, 0.005, 9.7, 0.005, 0.02, "<|");
+    // arr2->SetLineWidth(2);
+    // arr2->SetArrowSize(0.02);
+    // arr2->SetLineColor(kBlack);
+    // arr2->SetFillColor(kBlack);
+    // arr2->Draw();
+    // TLatex *t2 = new TLatex(9.75, 0.005, "9.25 MeV");
+    // t2->SetTextSize(0.03);
+    // t2->Draw();
 
-    // Arrow 3
-    TArrow *arr3 = new TArrow(2.25, 0.11, 2.7, 0.11, 0.02, "<|");
-    arr3->SetLineWidth(2);
-    arr3->SetArrowSize(0.02);
-    arr3->SetLineColor(kBlack);
-    arr3->SetFillColor(kBlack);
-    arr3->Draw();
-    TLatex *t3 = new TLatex(2.75, 0.11, "2.25 MeV");
-    t3->SetTextSize(0.03);
-    t3->Draw();
+    // // Arrow 3
+    // TArrow *arr3 = new TArrow(2.25, 0.11, 2.7, 0.11, 0.02, "<|");
+    // arr3->SetLineWidth(2);
+    // arr3->SetArrowSize(0.02);
+    // arr3->SetLineColor(kBlack);
+    // arr3->SetFillColor(kBlack);
+    // arr3->Draw();
+    // TLatex *t3 = new TLatex(2.75, 0.11, "2.25 MeV");
+    // t3->SetTextSize(0.03);
+    // t3->Draw();
 
     // Launch ROOT browser to allow editing
-    // new TBrowser();
+    new TBrowser();
 }

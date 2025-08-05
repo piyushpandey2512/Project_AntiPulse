@@ -8,8 +8,8 @@
 #include <algorithm>
 
 int main() {
-    std::ifstream inFile("PionInteractions_20250627_214333_1Cr.dat");
-    std::ofstream outFile("FilteredEvent_20250627_214333_1Cr.dat");
+    std::ifstream inFile("PionInteractions_20250805_182642_TestFile.dat");
+    std::ofstream outFile("FilteredEvent_20250805_182642_TestFile.dat");
 
     if (!inFile.is_open() || !outFile.is_open()) {
         std::cerr << "Error opening files!" << std::endl;

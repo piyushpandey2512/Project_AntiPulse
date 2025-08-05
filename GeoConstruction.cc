@@ -9,14 +9,14 @@
 G4bool overlapCheck = false;
 
 // Toggle these to select the setup you want
-bool useSTLGeometry = false;
+bool useSTLGeometry = true;
 bool useFourModuleSetup = false;
-bool useFourModuleSetupNewFEE = false;
+bool useFourModuleSetupNewFEE = true;
 bool useTestScintillator = false;
 bool useTestModulesSetup = false;
 bool useTwoScinB2B = false;
 bool useOneModule = false;
-bool useTwoB2BModules = true;
+bool useTwoB2BModules = false;
 
 MyDetectorConstruction::MyDetectorConstruction() {}
 
@@ -242,9 +242,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     if (useTwoB2BModules){
 
-        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
-        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 
