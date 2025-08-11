@@ -38,8 +38,8 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
     // --- 3-source cone emission with correct particle mix and energies ---
     if (useThreeSourceCone) {
-        // G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
-        G4ThreeVector stlPosition(0, 0, 0); // For testing, using origin
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        // G4ThreeVector stlPosition(0, 0, 0); // For testing, using origin
 
 
         // Define three fixed source positions

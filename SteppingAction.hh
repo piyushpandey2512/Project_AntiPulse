@@ -14,6 +14,8 @@ public:
 
     virtual void UserSteppingAction(const G4Step *);
 
+
+
 private:
     MyEventAction *fEventAction;
 
@@ -32,6 +34,9 @@ private:
         const G4String& volumeName,
         G4int copyNumber,
         const G4String& inout);
+
+        std::map<G4int, G4ThreeVector> fIntraModuleMomentumMap;
+        std::map<G4int, G4ThreeVector> fInterModuleMomentumMap;
 };
 
 #endif

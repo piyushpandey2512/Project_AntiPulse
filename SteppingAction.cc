@@ -69,6 +69,44 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4Track* track = step->GetTrack();
     G4String particleName = track->GetDefinition()->GetParticleName();
 
+
+    // --- NEW LOGIC BLOCK FOR ANGULAR DEVIATION HISTOGRAMS ---
+    if (volumeName == "Scintillator") 
+    {
+        auto manager = G4AnalysisManager::Instance();
+
+        // --- Logic for deviation WITHIN a single scintillator (Intra-Module) ---
+        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
+            fEventAction->StoreIntraModuleMomentum(track, preStepPoint->GetMomentum());
+        }
+        if (postStepPoint->GetStepStatus() == fGeomBoundary) {
+            G4ThreeVector entryMomentum = fEventAction->GetIntraModuleMomentum(track);
+            if (entryMomentum.mag() > 0) {
+                G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
+                manager->FillH1(manager->GetH1Id("IntraModuleDeviation"), deviation);
+            }
+        }
+
+        // --- Logic for deviation BETWEEN front and back modules (Inter-Module) ---
+        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
+            bool isFront = (copyNumber >= 0 && copyNumber < 100) || (copyNumber >= 200 && copyNumber < 300);
+            bool isBack = (copyNumber >= 100 && copyNumber < 200) || (copyNumber >= 300 && copyNumber < 400);
+
+            if (isFront) {
+                fEventAction->StoreInterModuleMomentum(track, preStepPoint->GetMomentum());
+            }
+            else if (isBack) {
+                G4ThreeVector frontMomentum = fEventAction->GetInterModuleMomentum(track);
+                if (frontMomentum.mag() > 0) {
+                    G4double deviation = frontMomentum.angle(preStepPoint->GetMomentum()) / deg;
+                    manager->FillH1(manager->GetH1Id("InterModuleDeviation"), deviation);
+                }
+            }
+        }
+    }
+
+    // ==============================================================================
+
     G4ThreeVector posPre  = preStepPoint->GetPosition();
     G4ThreeVector posPost = postStepPoint->GetPosition();
     G4double x = posPre.x() / cm;
@@ -166,3 +204,5 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
 
     }
 }
+
+

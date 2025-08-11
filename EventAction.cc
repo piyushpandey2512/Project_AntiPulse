@@ -102,3 +102,24 @@ void MyEventAction::SetBackPoint(const G4ThreeVector& back) {
     fBackPosition = back;
     hasBack = true;
 }
+
+
+void MyEventAction::StoreIntraModuleMomentum(const G4Track* track, const G4ThreeVector& momentum) {
+    fIntraModuleMomentumMap[track->GetTrackID()] = momentum;
+}
+
+G4ThreeVector MyEventAction::GetIntraModuleMomentum(const G4Track* track) const {
+    auto it = fIntraModuleMomentumMap.find(track->GetTrackID());
+    if (it != fIntraModuleMomentumMap.end()) return it->second;
+    return G4ThreeVector(0,0,0);
+}
+
+void MyEventAction::StoreInterModuleMomentum(const G4Track* track, const G4ThreeVector& momentum) {
+    fInterModuleMomentumMap[track->GetTrackID()] = momentum;
+}
+
+G4ThreeVector MyEventAction::GetInterModuleMomentum(const G4Track* track) const {
+    auto it = fInterModuleMomentumMap.find(track->GetTrackID());
+    if (it != fInterModuleMomentumMap.end()) return it->second;
+    return G4ThreeVector(0,0,0);
+}

@@ -72,6 +72,8 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH2("Edep2DByProcess", "Energy Deposition by Process;Process Index;Edep (MeV)",
                     13, 0, 13,    // 13 process types, bins 0-12
                     100, 0, 10);  // 0-10 MeV, 100 bins
+    manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
+    manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)
