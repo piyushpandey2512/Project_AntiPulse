@@ -38,15 +38,16 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
     // --- 3-source cone emission with correct particle mix and energies ---
     if (useThreeSourceCone) {
-        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        // G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);   // Adjusted for better alignment with modules
         // G4ThreeVector stlPosition(0, 0, 0); // For testing, using origin
 
 
         // Define three fixed source positions
         std::vector<G4ThreeVector> sourcePositions = {
             stlPosition,
-            stlPosition + G4ThreeVector(0, 0, 49.9 * cm),
-            stlPosition + G4ThreeVector(0, 0, -49.9 * cm)
+            stlPosition + G4ThreeVector(0, 0, 50.0 * cm),
+            stlPosition + G4ThreeVector(0, 0, -50.0 * cm)
         };
 
         // Calculate average module center for cone axis
@@ -221,14 +222,14 @@ if (useConeSourceTowardSingleModule) {
 
 
     if (useMoireSource) {
-        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 8.0 * cm);
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 
         
         // 2. Define source positions in the STL's *local* frame
         std::vector<G4ThreeVector> localSourcePositions = {
             G4ThreeVector(0, 0, 0),                  // Center of STL
-            G4ThreeVector(0, 0, 49.9 * cm),          // Offset along STL local Z
-            G4ThreeVector(0, 0, -49.9 * cm)          // Offset along STL local -Z
+            G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
+            G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
         };
 
         // 3. Transform local positions to world coordinates

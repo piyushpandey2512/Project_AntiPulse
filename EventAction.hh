@@ -23,8 +23,16 @@ public:
 
     void StoreIntraModuleMomentum(const G4Track* track, const G4ThreeVector& momentum);
     G4ThreeVector GetIntraModuleMomentum(const G4Track* track) const;
+    
     void StoreInterModuleMomentum(const G4Track* track, const G4ThreeVector& momentum);
     G4ThreeVector GetInterModuleMomentum(const G4Track* track) const;
+
+        // --- NEW METHODS FOR THE SINGLE SCINTILLATOR TEST ---
+    void StoreSingleScintMomentum(G4int trackID, const G4ThreeVector& momentum);
+    G4ThreeVector GetSingleScintMomentum(G4int trackID);
+
+    void StoreB2BFrontMomentum(G4int trackID, const G4ThreeVector& momentum);
+    G4ThreeVector GetB2BFrontMomentum(G4int trackID) const;
     
 private:
     G4double fEnergyDeposition;
@@ -37,6 +45,10 @@ private:
 
     std::map<G4int, G4ThreeVector> fIntraModuleMomentumMap;
     std::map<G4int, G4ThreeVector> fInterModuleMomentumMap;
+
+    // --- NEW MEMBER for the single scintillator ---
+    std::map<G4int, G4ThreeVector> fSingleScintMomentumMap;
+    std::map<G4int, G4ThreeVector> fB2BFrontMomentumMap;
 };
 
 #endif

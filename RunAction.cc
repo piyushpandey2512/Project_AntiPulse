@@ -74,6 +74,8 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
                     100, 0, 10);  // 0-10 MeV, 100 bins
     manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
     manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
+    manager->CreateH1("SingleScintDeviation", "Angular Deviation in Test Scintillator;Angle (degrees);Counts", 100, 0, 10);
+    manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 100, 0, 10);   
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)

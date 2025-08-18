@@ -123,3 +123,27 @@ G4ThreeVector MyEventAction::GetInterModuleMomentum(const G4Track* track) const 
     if (it != fInterModuleMomentumMap.end()) return it->second;
     return G4ThreeVector(0,0,0);
 }
+
+void MyEventAction::StoreSingleScintMomentum(G4int trackID, const G4ThreeVector& momentum)
+{
+    fSingleScintMomentumMap[trackID] = momentum;
+}
+
+G4ThreeVector MyEventAction::GetSingleScintMomentum(G4int trackID)
+{
+    auto it = fSingleScintMomentumMap.find(trackID);
+    if (it != fSingleScintMomentumMap.end()) {
+        return it->second;
+    }
+    return G4ThreeVector(0,0,0); // Return zero vector if not found
+}
+
+void MyEventAction::StoreB2BFrontMomentum(G4int trackID, const G4ThreeVector& momentum) {
+    fB2BFrontMomentumMap[trackID] = momentum;
+}
+
+G4ThreeVector MyEventAction::GetB2BFrontMomentum(G4int trackID) const {
+    auto it = fB2BFrontMomentumMap.find(trackID);
+    if (it != fB2BFrontMomentumMap.end()) return it->second;
+    return G4ThreeVector(0,0,0);
+}

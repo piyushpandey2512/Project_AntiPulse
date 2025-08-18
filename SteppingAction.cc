@@ -59,6 +59,7 @@ void MySteppingAction::writeToFile(
 
 void MySteppingAction::UserSteppingAction(const G4Step* step)
 {
+    auto manager = G4AnalysisManager::Instance();
     G4StepPoint* preStepPoint  = step->GetPreStepPoint();
     G4StepPoint* postStepPoint = step->GetPostStepPoint();
     G4VPhysicalVolume* volume  = preStepPoint->GetPhysicalVolume();
@@ -67,15 +68,17 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4int copyNumber = volume->GetCopyNo();
 
     G4Track* track = step->GetTrack();
+    G4int trackID = track->GetTrackID();
     G4String particleName = track->GetDefinition()->GetParticleName();
 
+    // ==============================================================================
+    // --- NEW, CORRECTED LOGIC FOR ALL ANGULAR DEVIATION HISTOGRAMS ---
+    // ==============================================================================
 
-    // --- NEW LOGIC BLOCK FOR ANGULAR DEVIATION HISTOGRAMS ---
+    // --- Logic for the MULTI-MODULE setup ---
     if (volumeName == "Scintillator") 
     {
-        auto manager = G4AnalysisManager::Instance();
-
-        // --- Logic for deviation WITHIN a single scintillator (Intra-Module) ---
+        // Deviation WITHIN a single multi-module scintillator (Intra-Module)
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             fEventAction->StoreIntraModuleMomentum(track, preStepPoint->GetMomentum());
         }
@@ -87,7 +90,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
             }
         }
 
-        // --- Logic for deviation BETWEEN front and back modules (Inter-Module) ---
+        // Deviation BETWEEN front and back modules (Inter-Module)
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             bool isFront = (copyNumber >= 0 && copyNumber < 100) || (copyNumber >= 200 && copyNumber < 300);
             bool isBack = (copyNumber >= 100 && copyNumber < 200) || (copyNumber >= 300 && copyNumber < 400);
@@ -105,6 +108,40 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
         }
     }
 
+    // --- SEPARATE Logic for the SINGLE SCINTILLATOR setup ---
+    if (volumeName == "OneScintillator1")
+    {
+        // Check if particle is ENTERING the volume
+        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
+            fEventAction->StoreSingleScintMomentum(trackID, preStepPoint->GetMomentum());
+        }
+        // Check if particle is EXITING the volume
+        if (postStepPoint->GetStepStatus() == fGeomBoundary) {
+            G4ThreeVector entryMomentum = fEventAction->GetSingleScintMomentum(trackID);
+            if (entryMomentum.mag() > 0) {
+                G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
+                manager->FillH1(manager->GetH1Id("SingleScintDeviation"), deviation);
+            }
+        }
+    }
+
+    // --- Logic for the TWO BACK-TO-BACK SCINTILLATORS setup ---
+    if (volumeName == "OneScintillator1" || volumeName == "OneScintillator2")
+    {
+        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
+            if (volumeName == "OneScintillator1") {
+                fEventAction->StoreB2BFrontMomentum(trackID, preStepPoint->GetMomentum());
+            }
+            else if (volumeName == "OneScintillator2") {
+                G4ThreeVector frontMomentum = fEventAction->GetB2BFrontMomentum(trackID);
+                if (frontMomentum.mag() > 0) {
+                    G4double deviation = frontMomentum.angle(preStepPoint->GetMomentum()) / deg;
+                    manager->FillH1(manager->GetH1Id("TwoScintB2BDeviation"), deviation);
+                }
+            }
+        }
+    }
+
     // ==============================================================================
 
     G4ThreeVector posPre  = preStepPoint->GetPosition();
@@ -117,7 +154,6 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4int eventID = G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID();
     G4int parentID = track->GetParentID();
     G4int stepID = track->GetCurrentStepNumber();
-    G4int trackID = track->GetTrackID();
     G4String processName = "None";
     if (step->GetPostStepPoint()->GetProcessDefinedStep())
         processName = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
@@ -178,7 +214,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     if (energyDep > 0.) {
         fEventAction->AddEnergyDep(energyDep);
 
-         const G4VProcess* process = postStepPoint->GetProcessDefinedStep();
+        const G4VProcess* process = postStepPoint->GetProcessDefinedStep();
         G4String procName = process ? process->GetProcessName() : "None";
 
         // Map process name to bin index
@@ -200,9 +236,5 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
 
         auto* manager = G4AnalysisManager::Instance();
         manager->FillH2(manager->GetH2Id("Edep2DByProcess"), procIndex, energyDep / MeV);
-
-
     }
 }
-
-
