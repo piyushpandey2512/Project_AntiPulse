@@ -103,11 +103,19 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double moduleTotalY = 13*(fullScinY + gap) - gap;
         G4double moduleHalfY = moduleTotalY/2.0;
 
+        // std::vector<G4ThreeVector> modulePositions = {
+        //     G4ThreeVector(15.8*cm, 0, 30*cm),  
+        //     G4ThreeVector(25.8*cm, 0, 30*cm),
+        //     G4ThreeVector(15.8*cm, 0, -30*cm),
+        //     G4ThreeVector(25.8*cm, 0, -30*cm)
+        // };
+
+
         std::vector<G4ThreeVector> modulePositions = {
-            G4ThreeVector(15.8*cm, 0, 30*cm),  
-            G4ThreeVector(25.8*cm, 0, 30*cm),
-            G4ThreeVector(15.8*cm, 0, -30*cm),
-            G4ThreeVector(25.8*cm, 0, -30*cm)
+            G4ThreeVector(20.8*cm, 0, 30*cm),  
+            G4ThreeVector(30.8*cm, 0, 30*cm),
+            G4ThreeVector(20.8*cm, 0, -30*cm),
+            G4ThreeVector(30.8*cm, 0, -30*cm)
         };
 
             // Front modules at x = 17 cm, back modules at x = 32 cm (15 cm apart)

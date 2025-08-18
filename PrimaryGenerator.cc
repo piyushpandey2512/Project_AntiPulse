@@ -221,98 +221,312 @@ if (useConeSourceTowardSingleModule) {
     }
 
 
-    if (useMoireSource) {
-        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 
-        
-        // 2. Define source positions in the STL's *local* frame
-        std::vector<G4ThreeVector> localSourcePositions = {
-            G4ThreeVector(0, 0, 0),                  // Center of STL
-            G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
-            G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
-        };
-
-        // 3. Transform local positions to world coordinates
-        std::vector<G4ThreeVector> sourcePositions;
-        for (const auto& localPos : localSourcePositions) {
-            G4ThreeVector worldPos = localPos + stlPosition;
-            sourcePositions.push_back(worldPos);
-        }
+    // Diagnostic Moire source
 
 
-        // Define the dimensions of the source box (using your physically correct thick source)
+        if (useMoireSource) {
+        // =================================================================
+        // --- SYMMETRY DIAGNOSTIC TEST ---
+        // Instructions:
+        // 1. Uncomment ONE of the two test cases below. Leave the other commented.
+        // 2. In your terminal, go to your build directory.
+        // 3. Force a clean re-compile by running:  make clean && make
+        // 4. Run your simulation for a fixed number of events (e.g., 100,000).
+        // 5. Run your reconstruction code and record the "Total extrapolated vertices found".
+        // 6. Come back here, comment out the first test case, and uncomment the second one.
+        // 7. Repeat steps 3, 4, and 5.
+        // 8. Compare the number of vertices from both runs. If the code and geometry
+        //    are symmetric, these two numbers should be nearly identical.
+
+        // --- Test Case 1: Positive Z Source ONLY ---
+        // const G4ThreeVector testSourceCenter(-8.0 * cm, 3.5 * cm, 50.0 * cm);
+        // const G4ThreeVector testAimPoint(25.8 * cm, 0.0, 30.0 * cm); // Aims at right arm
+
+        // --- Test Case 2: Negative Z Source ONLY ---
+        const G4ThreeVector testSourceCenter(-8.0 * cm, 3.5 * cm, -50.0 * cm);
+        const G4ThreeVector testAimPoint(25.8 * cm, 0.0, -30.0 * cm); // Aims at left arm
+        // =================================================================
+
+
+        // --- Common settings for the test ---
+        std::vector<G4ThreeVector> sourcePositions = { testSourceCenter }; // Use only the selected test source
         G4double boxHalfX = 7.0 * cm / 2.0;
         G4double boxHalfY = 7.0 * cm / 2.0;
         G4double boxHalfZ = 250.0 * micrometer / 2.0;
-
-    // --- DIRECTED EMISSION SETUP ---
-    // 1. Define a point that represents the approximate center of your entire detector array.
-    //    Your front modules are at x=15.8cm and back are at x=25.8cm. The average is 20.8cm.
-    G4ThreeVector detectorArrayCenter(20.8 * cm, 0.0, 0.0);
-
-    // 2. Define the opening angle of the emission cone. This is a key parameter to tune.
-    //    A larger angle ensures all detectors are illuminated, especially from the off-axis sources.
-    G4double coneHalfAngle = 100.0 * deg;
+        G4double coneHalfAngle = 100.0 * deg;
 
 
-    // Loop over each of the three source locations
-    for (const auto& sourceCenter : sourcePositions) {
-        // Generate a random position *within* one of the source boxes
-        G4double rx = (G4UniformRand() - 0.5) * boxHalfX;
-        G4double ry = (G4UniformRand() - 0.5) * boxHalfY;
-        G4double rz = (G4UniformRand() - 0.5) * boxHalfZ;
-        G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+        // This loop will only run once per event, for the single source defined above.
+        for (const auto& sourceCenter : sourcePositions) {
+            // Generate a random position *within* the source box
+            G4double rx = (G4UniformRand() - 0.5) * boxHalfX;
+            G4double ry = (G4UniformRand() - 0.5) * boxHalfY;
+            G4double rz = (G4UniformRand() - 0.5) * boxHalfZ;
+            G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
 
-        // Select particle type and energy (this logic is unchanged)
-        G4ParticleDefinition* particle;
-        G4double energy;
-        G4double rand = G4UniformRand();
-        
-        if (rand < 0.60) {
-            particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
-            energy = 230 * MeV;
-        }
-        else if (rand < 0.80) {
-            particle = particleTable->FindParticle("pi0");
-            energy = 230 * MeV;
-        }
-        else if (rand < 0.96) {
-            particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
-            energy = 150*MeV + 250*MeV*G4UniformRand();
-        }
-        else {
-            continue; // Skip eta mesons
-        }
+            // Select particle type and energy
+            G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+            G4ParticleDefinition* piPlus  = particleTable->FindParticle("pi+");
+            G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
+            G4ParticleDefinition* kPlus   = particleTable->FindParticle("kaon+");
+            G4ParticleDefinition* kMinus  = particleTable->FindParticle("kaon-");
+            
+            G4ParticleDefinition* particle;
+            G4double energy;
+            G4double rand = G4UniformRand();
+            
+            if (rand < 0.60) {
+                particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+                energy = 230 * MeV;
+            }
+            else if (rand < 0.80) {
+                particle = particleTable->FindParticle("pi0");
+                energy = 230 * MeV;
+            }
+            else if (rand < 0.96) {
+                particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+                energy = 150*MeV + 250*MeV*G4UniformRand();
+            }
+            else {
+                continue; // Skip eta mesons
+            }
 
-        // --- REPLACED ISOTROPIC EMISSION WITH CONE EMISSION ---
-        
-        // 3. Define the cone axis: a vector from the particle's actual origin to the detector center.
-        //    This must be calculated for each particle because `sourcePos` is randomized.
-        G4ThreeVector coneAxis = (detectorArrayCenter - sourcePos).unit();
+            // Define the cone axis from the particle's origin to the pre-defined aim point
+            G4ThreeVector coneAxis = (testAimPoint - sourcePos).unit();
 
-        // 4. Sample a random direction within the defined cone using the provided logic.
-        G4double cosThetaMax = std::cos(coneHalfAngle);
-        G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
-        G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
-        G4double phi = 2 * M_PI * G4UniformRand();
-        
-        G4ThreeVector randomDirection(sinTheta * std::cos(phi),
-                                      sinTheta * std::sin(phi),
-                                      cosTheta);
+            // Sample a random direction within the defined cone
+            G4double cosThetaMax = std::cos(coneHalfAngle);
+            G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
+            G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+            G4double phi = 2 * M_PI * G4UniformRand();
+            
+            G4ThreeVector randomDirection(sinTheta * std::cos(phi),
+                                          sinTheta * std::sin(phi),
+                                          cosTheta);
 
-        // 5. Rotate this randomly generated vector so that it is oriented along the coneAxis.
-        //    `rotateUz` finds the rotation that maps the Z-axis to the coneAxis and applies it.
-        G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+            // Rotate this randomly generated vector so that it is oriented along the coneAxis
+            G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-        // Configure particle gun with the new directed momentum
-        fParticleGun->SetParticleDefinition(particle);
-        fParticleGun->SetParticlePosition(sourcePos);
-        fParticleGun->SetParticleMomentumDirection(finalDirection); // Use the new direction
-        fParticleGun->SetParticleEnergy(energy);
-        
-        fParticleGun->GeneratePrimaryVertex(anEvent);
+            // Configure particle gun
+            fParticleGun->SetParticleDefinition(particle);
+            fParticleGun->SetParticlePosition(sourcePos);
+            fParticleGun->SetParticleMomentumDirection(finalDirection);
+            fParticleGun->SetParticleEnergy(energy);
+            
+            fParticleGun->GeneratePrimaryVertex(anEvent);
         }
     }
+
+    //     if (useMoireSource) {
+    //     G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
+
+        
+    //     // 2. Define source positions in the STL's *local* frame
+    //     std::vector<G4ThreeVector> localSourcePositions = {
+    //         G4ThreeVector(0, 0, 0),                  // Center of STL
+    //         G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
+    //         G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
+    //     };
+
+    //     // 3. Transform local positions to world coordinates
+    //     std::vector<G4ThreeVector> sourcePositions;
+    //     for (const auto& localPos : localSourcePositions) {
+    //         G4ThreeVector worldPos = localPos + stlPosition;
+    //         sourcePositions.push_back(worldPos);
+    //     }
+
+
+    //     // Define the dimensions of the source box (using your physically correct thick source)
+    //     G4double boxHalfX = 7.0 * cm / 2.0;
+    //     G4double boxHalfY = 7.0 * cm / 2.0;
+    //     G4double boxHalfZ = 250.0 * micrometer / 2.0;
+
+    // // --- MODIFICATION: UPDATED SMART AIMING SETUP for new geometry ---
+    // // 1. Define the average centers of the LEFT and RIGHT detector arms.
+    // //    Your new modules are at x=20.8 and x=30.8, so the new average X is 25.8 cm.
+    // //    Your arms are centered at z=+30 and z=-30 cm.
+    // G4ThreeVector rightArmCenter(25.8 * cm, 0.0,  30.0 * cm);
+    // G4ThreeVector leftArmCenter (25.8 * cm, 0.0, -30.0 * cm);
+    // G4ThreeVector centralAimPoint(25.8 * cm, 0.0, 0.0); // For the central source
+
+    // // 2. Define the opening angle of the emission cone.
+    // G4double coneHalfAngle = 160.0 * deg;
+
+
+    // // Loop over each of the three source locations
+    // for (const auto& sourceCenter : sourcePositions) {
+    //     // Generate a random position *within* one of the source boxes
+    //     G4double rx = (G4UniformRand() - 0.5) * boxHalfX;
+    //     G4double ry = (G4UniformRand() - 0.5) * boxHalfY;
+    //     G4double rz = (G4UniformRand() - 0.5) * boxHalfZ;
+    //     G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+
+    //     // Select particle type and energy (this logic is unchanged)
+    //     G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+    //     G4ParticleDefinition* piPlus  = particleTable->FindParticle("pi+");
+    //     G4ParticleDefinition* piMinus = particleTable->FindParticle("pi-");
+    //     G4ParticleDefinition* kPlus   = particleTable->FindParticle("kaon+");
+    //     G4ParticleDefinition* kMinus  = particleTable->FindParticle("kaon-");
+        
+    //     G4ParticleDefinition* particle;
+    //     G4double energy;
+    //     G4double rand = G4UniformRand();
+        
+    //     if (rand < 0.60) {
+    //         particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+    //         energy = 230 * MeV;
+    //     }
+    //     else if (rand < 0.80) {
+    //         particle = particleTable->FindParticle("pi0");
+    //         energy = 230 * MeV;
+    //     }
+    //     else if (rand < 0.96) {
+    //         particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+    //         energy = 150*MeV + 250*MeV*G4UniformRand();
+    //     }
+    //     else {
+    //         continue; // Skip eta mesons
+    //     }
+
+    //     // --- Select AIM POINT BASED ON SOURCE POSITION ---
+        
+    //     // 3. Choose which detector arm to aim at.
+    //     G4ThreeVector aimPoint;
+    //     if (sourceCenter.z() > 10 * cm) { // This is the Z=+50 cm source
+    //         aimPoint = rightArmCenter;
+    //     } else if (sourceCenter.z() < -10 * cm) { // This is the Z=-50 cm source
+    //         aimPoint = leftArmCenter;
+    //     } else { // This is the Z=0 cm source
+    //         // For the central source, randomly aim at either the left or right arm.
+    //         // This creates a more realistic illumination pattern and prevents the central
+    //         // source from "stealing" tracks from the other two.
+    //         if (G4UniformRand() < 0.5) {
+    //             aimPoint = rightArmCenter;
+    //         } else {
+    //             aimPoint = leftArmCenter;
+    //         }
+    //     }
+
+    //     // 4. Define the cone axis: from the particle's origin to the CHOSEN aim point.
+    //     G4ThreeVector coneAxis = (aimPoint - sourcePos).unit();
+
+    //     // 5. Sample a random direction within the defined cone (this logic is unchanged)
+    //     G4double cosThetaMax = std::cos(coneHalfAngle);
+    //     G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
+    //     G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+    //     G4double phi = 2 * M_PI * G4UniformRand();
+        
+    //     G4ThreeVector randomDirection(sinTheta * std::cos(phi),
+    //                                   sinTheta * std::sin(phi),
+    //                                   cosTheta);
+
+    //     // 6. Rotate this randomly generated vector so that it is oriented along the new coneAxis.
+    //     G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+
+    //     // Configure particle gun with the new directed momentum
+    //     fParticleGun->SetParticleDefinition(particle);
+    //     fParticleGun->SetParticlePosition(sourcePos);
+    //     fParticleGun->SetParticleMomentumDirection(finalDirection); // Use the new direction
+    //     fParticleGun->SetParticleEnergy(energy);
+        
+    //     fParticleGun->GeneratePrimaryVertex(anEvent);
+    //     }
+    // }
+
+
+    // if (useMoireSource) {
+    //     G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
+
+        
+    //     // 2. Define source positions in the STL's *local* frame
+    //     std::vector<G4ThreeVector> localSourcePositions = {
+    //         G4ThreeVector(0, 0, 0),                  // Center of STL
+    //         G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
+    //         G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
+    //     };
+
+    //     // 3. Transform local positions to world coordinates
+    //     std::vector<G4ThreeVector> sourcePositions;
+    //     for (const auto& localPos : localSourcePositions) {
+    //         G4ThreeVector worldPos = localPos + stlPosition;
+    //         sourcePositions.push_back(worldPos);
+    //     }
+
+
+    //     // Define the dimensions of the source box (using your physically correct thick source)
+    //     G4double boxHalfX = 7.0 * cm / 2.0;
+    //     G4double boxHalfY = 7.0 * cm / 2.0;
+    //     G4double boxHalfZ = 250.0 * micrometer / 2.0;
+
+    // // --- DIRECTED EMISSION SETUP ---
+    // // 1. Define a point that represents the approximate center of your entire detector array.
+    // //    Your front modules are at x=15.8cm and back are at x=25.8cm. The average is 20.8cm.
+    // G4ThreeVector detectorArrayCenter(20.8 * cm, 0.0, 0.0);
+
+    // // 2. Define the opening angle of the emission cone. This is a key parameter to tune.
+    // //    A larger angle ensures all detectors are illuminated, especially from the off-axis sources.
+    // G4double coneHalfAngle = 100.0 * deg;
+
+
+    // // Loop over each of the three source locations
+    // for (const auto& sourceCenter : sourcePositions) {
+    //     // Generate a random position *within* one of the source boxes
+    //     G4double rx = (G4UniformRand() - 0.5) * boxHalfX;
+    //     G4double ry = (G4UniformRand() - 0.5) * boxHalfY;
+    //     G4double rz = (G4UniformRand() - 0.5) * boxHalfZ;
+    //     G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+
+    //     // Select particle type and energy (this logic is unchanged)
+    //     G4ParticleDefinition* particle;
+    //     G4double energy;
+    //     G4double rand = G4UniformRand();
+        
+    //     if (rand < 0.60) {
+    //         particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+    //         energy = 230 * MeV;
+    //     }
+    //     else if (rand < 0.80) {
+    //         particle = particleTable->FindParticle("pi0");
+    //         energy = 230 * MeV;
+    //     }
+    //     else if (rand < 0.96) {
+    //         particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+    //         energy = 150*MeV + 250*MeV*G4UniformRand();
+    //     }
+    //     else {
+    //         continue; // Skip eta mesons
+    //     }
+
+    //     // --- REPLACED ISOTROPIC EMISSION WITH CONE EMISSION ---
+        
+    //     // 3. Define the cone axis: a vector from the particle's actual origin to the detector center.
+    //     //    This must be calculated for each particle because `sourcePos` is randomized.
+    //     G4ThreeVector coneAxis = (detectorArrayCenter - sourcePos).unit();
+
+    //     // 4. Sample a random direction within the defined cone using the provided logic.
+    //     G4double cosThetaMax = std::cos(coneHalfAngle);
+    //     G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
+    //     G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+    //     G4double phi = 2 * M_PI * G4UniformRand();
+        
+    //     G4ThreeVector randomDirection(sinTheta * std::cos(phi),
+    //                                   sinTheta * std::sin(phi),
+    //                                   cosTheta);
+
+    //     // 5. Rotate this randomly generated vector so that it is oriented along the coneAxis.
+    //     //    `rotateUz` finds the rotation that maps the Z-axis to the coneAxis and applies it.
+    //     G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+
+    //     // Configure particle gun with the new directed momentum
+    //     fParticleGun->SetParticleDefinition(particle);
+    //     fParticleGun->SetParticlePosition(sourcePos);
+    //     fParticleGun->SetParticleMomentumDirection(finalDirection); // Use the new direction
+    //     fParticleGun->SetParticleEnergy(energy);
+        
+    //     fParticleGun->GeneratePrimaryVertex(anEvent);
+    //     }
+    // }
 
     if (useTestSingleSource) {
         // Test source at a fixed position

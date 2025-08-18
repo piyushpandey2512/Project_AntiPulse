@@ -102,7 +102,7 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
 // --- Main Program ---
 int main() {
     // --- SETUP ---
-    std::ifstream inFile("PionInteractions_20250814_173141_10Cr_Moire_new.dat");
+    std::ifstream inFile("../build/PionInteractions_20250818_155507.dat");
     if (!inFile) {
         std::cerr << "Error: Could not open input file. Please check path.\n";
         return 1;
@@ -131,12 +131,12 @@ int main() {
     sourceBoxes.push_back({center3, boxHalfX, boxHalfY, boxHalfZ});
     
     // --- ROOT file setup ---
-    TFile* outFile = new TFile("ExtrapolatedVertices_3D_MoireSource_new_position.root", "RECREATE");
+    TFile* outFile = new TFile("ExtrapolatedVertices_3D_MoireSource_new_position_positive_source.root", "RECREATE");
     TTree* tree = new TTree("ExtrapolatedVertexTree", "3D Extrapolated Track Origins");
     long long eventID; int trackID; double vx, vy, vz;
     tree->Branch("eventID", &eventID, "eventID/L"); tree->Branch("trackID", &trackID, "trackID/I");
     tree->Branch("vx", &vx, "vx/D"); tree->Branch("vy", &vy, "vy/D"); tree->Branch("vz", &vz, "vz/D");
-    TH3D* h3_vertex = new TH3D("h3_extrap_vertex", "Extrapolated Vertex Origins;X (cm);Y (cm);Z (cm)", 50, -12.0, -4.0, 50, 0.0, 7.0, 100, -50.0, 65.0);
+    TH3D* h3_vertex = new TH3D("h3_extrap_vertex", "Extrapolated Vertex Origins;X (cm);Y (cm);Z (cm)", 50, -12.0, -4.0, 50, -2.0, 8.0, 100, -65.0, 65.0);
 
     // --- FILE PARSING (Unchanged) ---
     std::unordered_map<long long, std::vector<Hit>> events;
@@ -235,7 +235,6 @@ int main() {
 //     TVector3  position;
 // };
 
-// // MODIFICATION 1: Replaced SourcePlane with SourceBox to represent a 3D volume (kept for compatibility if needed)
 // struct SourceBox {
 //     TVector3 center;
 //     double   halfWidthX;
@@ -257,39 +256,49 @@ int main() {
 //     return {p_front, dir};
 // }
 
-// // Intersect ray p + t*d with a fixed vertical plane x = x_plane.
-// // Returns std::nullopt if no intersection (parallel and not on plane or intersection behind start).
-// std::optional<TVector3> intersectWithXPlane(const TVector3& p, const TVector3& d, double x_plane, double eps = 1e-9) {
-//     // If direction nearly parallel to X axis (d.X() == 0)
-//     if (std::abs(d.X()) < eps) {
-//         // If already on the plane (within tolerance) consider t = 0 intersection; otherwise no intersection
-//         if (std::abs(p.X() - x_plane) < 1e-6) return p; // on-plane at t=0
+// std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVector3& trackDir, const SourceBox& box) {
+//     double xmin = box.center.X() - box.halfWidthX, xmax = box.center.X() + box.halfWidthX;
+//     double ymin = box.center.Y() - box.halfWidthY, ymax = box.center.Y() + box.halfWidthY;
+//     double zmin = box.center.Z() - box.halfWidthZ, zmax = box.center.Z() + box.halfWidthZ;
+
+//     double t_near = -std::numeric_limits<double>::infinity();
+//     double t_far  =  std::numeric_limits<double>::infinity();
+
+//     if (std::abs(trackDir.X()) < 1e-9) { if (trackPoint.X() < xmin || trackPoint.X() > xmax) return std::nullopt; }
+//     else {
+//         double t1 = (xmin - trackPoint.X()) / trackDir.X(); double t2 = (xmax - trackPoint.X()) / trackDir.X();
+//         if (t1 > t2) std::swap(t1, t2);
+//         t_near = std::max(t_near, t1); t_far  = std::min(t_far, t2);
+//     }
+//     if (std::abs(trackDir.Y()) < 1e-9) { if (trackPoint.Y() < ymin || trackPoint.Y() > ymax) return std::nullopt; }
+//     else {
+//         double t1 = (ymin - trackPoint.Y()) / trackDir.Y(); double t2 = (ymax - trackPoint.Y()) / trackDir.Y();
+//         if (t1 > t2) std::swap(t1, t2);
+//         t_near = std::max(t_near, t1); t_far  = std::min(t_far, t2);
+//     }
+//     if (std::abs(trackDir.Z()) < 1e-9) { if (trackPoint.Z() < zmin || trackPoint.Z() > zmax) return std::nullopt; }
+//     else {
+//         double t1 = (zmin - trackPoint.Z()) / trackDir.Z(); double t2 = (zmax - trackPoint.Z()) / trackDir.Z();
+//         if (t1 > t2) std::swap(t1, t2);
+//         t_near = std::max(t_near, t1); t_far  = std::min(t_far, t2);
+//     }
+
+//     if (t_near > t_far || t_far < 0) {
 //         return std::nullopt;
 //     }
-//     double t = (x_plane - p.X()) / d.X();
-//     // Require intersection in front of the track point (t >= 0). If you want backward extrapolation, adjust this.
-//     if (t < 0) return std::nullopt;
-//     return p + d * t;
-// }
 
-// // Compute both front/back intersections (front_x and back_x). Returns pair(frontOpt, backOpt)
-// std::pair<std::optional<TVector3>, std::optional<TVector3>>
-// intersectFrontBack(const TVector3& p, const TVector3& d, double front_x = 14.55, double back_x = 24.55) {
-//     std::optional<TVector3> front = intersectWithXPlane(p, d, front_x);
-//     std::optional<TVector3> back  = intersectWithXPlane(p, d, back_x);
-//     return {front, back};
+//     return trackPoint + trackDir * t_far;
 // }
 
 // // --- Main Program ---
 // int main() {
 //     // --- SETUP ---
-//     std::ifstream inFile("PionInteractions_20250814_173141_10Cr_Moire_new.dat");
+//     std::ifstream inFile("PionInteractions_20250818_113509_Test_Moire_New_10lac.dat");
 //     if (!inFile) {
 //         std::cerr << "Error: Could not open input file. Please check path.\n";
 //         return 1;
 //     }
 
-//     // MODIFICATION 3: Define the source geometry using SourceBox and physical dimensions (kept for context)
 //     const TVector3 stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 //     const double boxHalfX = 7.0 * cm / 2.0;
 //     const double boxHalfY = 7.0 * cm / 2.0;
@@ -303,20 +312,12 @@ int main() {
 //     sourceBoxes.push_back({center2, boxHalfX, boxHalfY, boxHalfZ});
 //     sourceBoxes.push_back({center3, boxHalfX, boxHalfY, boxHalfZ});
 
-//     // --- ROOT file setup ---
-//     TFile* outFile = new TFile("ExtrapolatedVertices_3D_MoireSource_new_position.root", "RECREATE");
+//     TFile* outFile = new TFile("ExtrapolatedVertices_3D_MoireSource_new_position_robust.root", "RECREATE");
 //     TTree* tree = new TTree("ExtrapolatedVertexTree", "3D Extrapolated Track Origins");
-//     long long eventID; int trackID; int planeID; double vx, vy, vz;
-//     tree->Branch("eventID", &eventID, "eventID/L");
-//     tree->Branch("trackID", &trackID, "trackID/I");
-//     // planeID: 0 -> front (x=14.55), 1 -> back (x=24.55)
-//     tree->Branch("planeID", &planeID, "planeID/I");
+//     long long eventID; int trackID; double vx, vy, vz;
+//     tree->Branch("eventID", &eventID, "eventID/L"); tree->Branch("trackID", &trackID, "trackID/I");
 //     tree->Branch("vx", &vx, "vx/D"); tree->Branch("vy", &vy, "vy/D"); tree->Branch("vz", &vz, "vz/D");
-//     TH3D* h3_vertex = new TH3D("h3_extrap_vertex",
-//                                "Extrapolated Vertex Origins;X (cm);Y (cm);Z (cm)",
-//                                50, -12.0, -4.0,
-//                                50, 0.0, 7.0,
-//                                100, -50.0, 65.0);
+//     TH3D* h3_vertex = new TH3D("h3_extrap_vertex", "Extrapolated Vertex Origins;X (cm);Y (cm);Z (cm)", 50, -12.0, -4.0, 50, 0.0, 7.0, 100, -50.0, 65.0);
 
 //     // --- FILE PARSING (Unchanged) ---
 //     std::unordered_map<long long, std::vector<Hit>> events;
@@ -334,19 +335,14 @@ int main() {
 
 //     // --- RECONSTRUCTION LOGIC ---
 //     int vertexCount = 0;
-//     std::cout << "Finding tracks and extrapolating to X planes (14.55 cm front, 24.55 cm back)...\n";
-
-//     // constants for front/back planes
-//     const double front_x = 14.55; // cm
-//     const double back_x  = 24.55; // cm
-
+//     std::cout << "Finding tracks and extrapolating to source...\n";
 //     for (const auto& [current_eventID, all_hits_in_event] : events) {
 //         std::unordered_map<int, std::vector<Hit>> tracks_in_event;
 //         for (const auto& hit : all_hits_in_event) { tracks_in_event[hit.trackID].push_back(hit); }
-
 //         for (const auto& [current_trackID, hits_for_this_track] : tracks_in_event) {
 //             if (hits_for_this_track.size() < 2) continue;
 
+//             // This logic correctly finds at most one of each hit type for a given track.
 //             std::optional<Hit> leftFrontHit, leftBackHit, rightFrontHit, rightBackHit;
 //             for (const auto& hit : hits_for_this_track) {
 //                 if (isLeftFront(hit.copyNo))  leftFrontHit = hit;
@@ -355,57 +351,50 @@ int main() {
 //                 if (isRightBack(hit.copyNo))  rightBackHit = hit;
 //             }
 
+//             // *** CORRECT PAIRING LOGIC IS HERE ***
+//             // A track is only formed if a front/back pair is found on the *same side*.
 //             std::optional<std::pair<TVector3, TVector3>> track_to_extrapolate;
 //             if (leftFrontHit && leftBackHit) {
-//                 // Optional logging (comment/uncomment as needed)
-//                 // std::cout << "Left Track Hit Zs: " << leftFrontHit->position.Z()
-//                 //           << ", " << leftBackHit->position.Z() << std::endl;
 //                 track_to_extrapolate = getTrack(*leftFrontHit, *leftBackHit);
 //             } else if (rightFrontHit && rightBackHit) {
-//                 // std::cout << "Right Track Hit Zs: " << rightFrontHit->position.Z()
-//                 //           << ", " << rightBackHit->position.Z() << std::endl;
 //                 track_to_extrapolate = getTrack(*rightFrontHit, *rightBackHit);
 //             }
 
-//             if (!track_to_extrapolate) continue;
+//             if (track_to_extrapolate) {
+//                 // --- RECOMMENDED MODIFICATION: Find the BEST intersection, not the FIRST ---
+//                 std::optional<TVector3> best_vertex_opt;
+//                 double min_dist_sq = std::numeric_limits<double>::infinity();
 
-//             const TVector3 trackPoint = track_to_extrapolate->first;
-//             const TVector3 trackDir   = track_to_extrapolate->second;
+//                 for (const auto& box : sourceBoxes) {
+//                     auto vertex_opt = extrapolateToBox(track_to_extrapolate->first, track_to_extrapolate->second, box);
+//                     if (vertex_opt) {
+//                         // Calculate the squared distance from the detector back to the potential vertex
+//                         double dist_sq = (track_to_extrapolate->first - *vertex_opt).Mag2();
 
-//             // Compute intersections with front/back X planes
-//             auto [frontOpt, backOpt] = intersectFrontBack(trackPoint, trackDir, front_x, back_x);
+//                         // If this intersection is closer than any other found so far, it's the new best candidate
+//                         if (dist_sq < min_dist_sq) {
+//                             min_dist_sq = dist_sq;
+//                             best_vertex_opt = vertex_opt;
+//                         }
+//                     }
+//                 }
 
-//             // We'll fill entries for whichever intersections exist (front and/or back).
-//             // Use planeID = 0 for front_x, planeID = 1 for back_x.
-//             if (frontOpt) {
-//                 TVector3 vertex = *frontOpt;
-//                 // compute squared distance from trackPoint to vertex correctly
-//                 double dist_sq = (vertex - trackPoint).Mag2();
-
-//                 eventID = current_eventID; trackID = current_trackID; planeID = 0;
-//                 vx = vertex.X(); vy = vertex.Y(); vz = vertex.Z();
-//                 tree->Fill(); h3_vertex->Fill(vx, vy, vz);
-//                 vertexCount++;
+//                 // If a valid, best intersection was found after checking all boxes, store it.
+//                 if (best_vertex_opt) {
+//                     TVector3 vertex = *best_vertex_opt;
+//                     eventID = current_eventID; trackID = current_trackID;
+//                     vx = vertex.X(); vy = vertex.Y(); vz = vertex.Z();
+//                     tree->Fill();
+//                     h3_vertex->Fill(vx, vy, vz);
+//                     vertexCount++;
+//                 }
 //             }
-
-//             if (backOpt) {
-//                 TVector3 vertex = *backOpt;
-//                 double dist_sq = (vertex - trackPoint).Mag2();
-
-//                 eventID = current_eventID; trackID = current_trackID; planeID = 1;
-//                 vx = vertex.X(); vy = vertex.Y(); vz = vertex.Z();
-//                 tree->Fill(); h3_vertex->Fill(vx, vy, vz);
-//                 vertexCount++;
-//             }
-
-//             // Note: If you only want to record the front intersection (and ignore back),
-//             // remove the backOpt block above (or vice versa).
 //         }
 //     }
 
 //     // --- FINALIZATION ---
 //     std::cout << "Track extrapolation completed.\n";
-//     std::cout << "Total extrapolated vertex-plane intersections found: " << vertexCount << "\n";
+//     std::cout << "Total extrapolated vertices found: " << vertexCount << "\n";
 //     outFile->cd();
 //     tree->Write();
 //     h3_vertex->Write();

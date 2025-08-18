@@ -163,7 +163,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     std::ofstream& out = runAction->GetPionFile();
 
     // Right Front: z in [20, 70] cm
-    if (copyNumber >= 0 && copyNumber < 100 && z > 20 && z < 70) {
+    if (copyNumber >= 0 && copyNumber < 100) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             writeToFile(out, x, y, z, preStepPoint->GetGlobalTime(), energyDep, preStepPoint->GetMomentum(),
                         eventID, parentID, stepID, trackID, processName, particleName, volumeName, copyNumber, "in");
@@ -175,7 +175,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     }
 
     // Right Back: z in [20, 70] cm
-    if (copyNumber >= 100 && copyNumber < 200 && z > 20 && z < 70) {
+    if (copyNumber >= 100 && copyNumber < 200) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             writeToFile(out, x, y, z, preStepPoint->GetGlobalTime(), energyDep, preStepPoint->GetMomentum(),
                         eventID, parentID, stepID, trackID, processName, particleName, volumeName, copyNumber, "in");
@@ -187,7 +187,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     }
 
     // Left Front: z in [-70, -20] cm
-    if (copyNumber >= 200 && copyNumber < 300 && z > -70 && z < -20) {
+    if (copyNumber >= 200 && copyNumber < 300) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             writeToFile(out, x, y, z, preStepPoint->GetGlobalTime(), energyDep, preStepPoint->GetMomentum(),
                         eventID, parentID, stepID, trackID, processName, particleName, volumeName, copyNumber, "in");
@@ -199,7 +199,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     }
 
     // Left Back: z in [-70, -20] cm
-    if (copyNumber >= 300 && copyNumber < 400 && z > -70 && z < -20) {
+    if (copyNumber >= 300 && copyNumber < 400) {
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             writeToFile(out, x, y, z, preStepPoint->GetGlobalTime(), energyDep, preStepPoint->GetMomentum(),
                         eventID, parentID, stepID, trackID, processName, particleName, volumeName, copyNumber, "in");
