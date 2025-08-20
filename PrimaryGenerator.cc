@@ -384,9 +384,9 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
     // Loop over each of the three source locations
     for (const auto& sourceCenter : sourcePositions) {
         // Generate a random position *within* one of the source boxes
-        G4double rx = (G4UniformRand() - 0.5) * boxHalfX;
-        G4double ry = (G4UniformRand() - 0.5) * boxHalfY;
-        G4double rz = (G4UniformRand() - 0.5) * boxHalfZ;
+        G4double rx = (G4UniformRand() - 0.5) * (2.0 * boxHalfX);  
+        G4double ry = (G4UniformRand() - 0.5) * (2.0 * boxHalfY);
+        G4double rz = (G4UniformRand() - 0.5) * (2.0 * boxHalfZ);
         G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
 
         // Select particle type and energy (this logic is unchanged)
