@@ -1,7 +1,7 @@
 #include "RunAction.hh"
 #include "G4AnalysisManager.hh"
 #include "G4RunManager.hh"
-
+#include "G4SystemOfUnits.hh" 
 #include <fstream>
 #include <chrono>
 #include <iomanip>
@@ -66,6 +66,13 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->FinishNtuple(1);
 
     // Create histograms
+
+
+    manager->CreateH3("SourceXYZDistribution", "Primary Particle Source Position;X (cm);Y (cm);Z (cm)",
+                      50, -12.0*cm, -4.0*cm,    // X-axis: 50 bins from -12 cm to -4 cm
+                      50,  0.0*cm,  7.0*cm,     // Y-axis: 50 bins from 0 cm to 7 cm
+                      100, -60.0*cm, 60.0*cm);   // Z-axis: 100 bins from -60 cm to 60 cm
+
     CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers (Copy Number)", 400, 0, 400);
     CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions (MeV)", 100, 0, 10);
     // CreateHistogramWithTitles(manager, "AngularDeviation", "Angular Deviation of Pion Tracks (deg)", 100, 0, 20);

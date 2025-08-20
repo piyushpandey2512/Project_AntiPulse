@@ -8,6 +8,8 @@
 #include "G4ThreeVector.hh"
 #include "Randomize.hh"
 
+#include "G4AnalysisManager.hh"
+
 class MyPrimaryParticles : public G4VUserPrimaryGeneratorAction
 
 {

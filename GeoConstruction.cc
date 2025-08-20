@@ -6,6 +6,8 @@
 #include <vector>
 #include "CADMesh.hh"
 
+using namespace std;
+
 G4bool overlapCheck = false;
 
 // Toggle these to select the setup you want
@@ -38,6 +40,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     // --- STL Geometry ---
     if (useSTLGeometry) {
+        cout << "GeoConstruction: Using STL geometry" << endl;
         G4String stlFile = "/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/stl_geometry/TotalGravModuleV2.stl";
         CADMesh *cadMesh = new CADMesh(const_cast<char*>(stlFile.c_str()));
         cadMesh->SetScale(1.0);
@@ -56,6 +59,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     // --- Four Module Setup ---
     if (useFourModuleSetup) {
+        cout << "GeoConstruction: Using four module setup" << endl;
         G4double scinHalfX = 2.5*cm / 2.0;
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
@@ -88,6 +92,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     // --- Four Module Setup (Modified with new FEE) ---
     if (useFourModuleSetupNewFEE) {
+        cout << "GeoConstruction: Using four module setup with new FEE" << endl;
         G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
@@ -103,28 +108,12 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double moduleTotalY = 13*(fullScinY + gap) - gap;
         G4double moduleHalfY = moduleTotalY/2.0;
 
-        // std::vector<G4ThreeVector> modulePositions = {
-        //     G4ThreeVector(15.8*cm, 0, 30*cm),  
-        //     G4ThreeVector(25.8*cm, 0, 30*cm),
-        //     G4ThreeVector(15.8*cm, 0, -30*cm),
-        //     G4ThreeVector(25.8*cm, 0, -30*cm)
-        // };
-
-
         std::vector<G4ThreeVector> modulePositions = {
             G4ThreeVector(20.8*cm, 0, 30*cm),  
             G4ThreeVector(30.8*cm, 0, 30*cm),
             G4ThreeVector(20.8*cm, 0, -30*cm),
             G4ThreeVector(30.8*cm, 0, -30*cm)
         };
-
-            // Front modules at x = 17 cm, back modules at x = 32 cm (15 cm apart)
-        // std::vector<G4ThreeVector> modulePositions = {
-        //     G4ThreeVector(17*cm, 0,  30*cm), // front right
-        //     G4ThreeVector(32*cm, 0,  30*cm), // back right
-        //     G4ThreeVector(17*cm, 0, -30*cm), // front left
-        //     G4ThreeVector(32*cm, 0, -30*cm)  // back left
-        // };
 
         for (size_t m = 0; m < modulePositions.size(); m++) {
             G4ThreeVector modCenter = modulePositions[m];
@@ -138,6 +127,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
 
     // --- Single Test Scintillator ---
     if (useTestScintillator) {
+        cout << "GeoConstruction: Using single test scintillator" << endl;
         // G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; // test for energy deposition with double width
         G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
@@ -156,6 +146,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useTestModulesSetup) {
+        cout << "GeoConstruction: Using test modules setup" << endl;
         G4double scinHalfX = 2.5*cm / 2.0;
         // // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
@@ -197,6 +188,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useTwoScinB2B) {
+        cout << "GeoConstruction: Using two scintillators back-to-back" << endl;
         // G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
@@ -216,6 +208,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useOneModule) {
+        cout << "GeoConstruction: Using one module" << endl;
         G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
@@ -249,6 +242,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     if (useTwoB2BModules){
+        cout << "GeoConstruction: Using two modules back-to-back" << endl;
 
         // G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
