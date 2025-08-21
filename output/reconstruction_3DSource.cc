@@ -91,7 +91,7 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
 int main() {
     // --- SETUP ---
     // Make sure this path points to your latest 3-source data file
-    std::ifstream inFile("../build/PionInteractions_20250820_175436.dat");
+    std::ifstream inFile("../build/PionInteractions_20250820_185858.dat");
     if (!inFile) {
         std::cerr << "Error: Could not open input file. Please check path.\n";
         return 1;

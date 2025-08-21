@@ -373,7 +373,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
         // 2. Define the opening angle of the emission cone. This is a key parameter to tune.
         //    A larger angle ensures all detectors are illuminated, especially from the off-axis sources.
-        G4double coneHalfAngle = 70 * deg;
+        G4double coneHalfAngle = 40 * deg;
 
 
         // --- MODIFICATION: Get the Analysis Manager ---
