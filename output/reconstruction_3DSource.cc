@@ -76,7 +76,7 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
         if (t1 > t2) std::swap(t1, t2);
         t_near = std::max(t_near, t1); t_far  = std::min(t_far, t2);
     }
-    
+
     // For Z slabs
     if (std::abs(trackDir.Z()) < 1e-9) { if (trackPoint.Z() < zmin || trackPoint.Z() > zmax) return std::nullopt; }
     else {
