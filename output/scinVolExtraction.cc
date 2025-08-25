@@ -8,8 +8,8 @@
 #include <algorithm>
 
 int main() {
-    std::ifstream inFile("PionInteractions_20250818_113509_Test_Moire_New_10lac.dat");
-    std::ofstream outFile("FilteredEvent_20250818_113509_Test_Moire_New_10lac.dat");
+    std::ifstream inFile("../build/PionInteractions_20250820_185858.dat");
+    std::ofstream outFile("FilteredEvent_20250820_185858.dat");
 
     if (!inFile.is_open() || !outFile.is_open()) {
         std::cerr << "Error opening files!" << std::endl;
@@ -38,7 +38,7 @@ int main() {
                 fields[5] == "kaon+" ||
                 fields[5] == "kaon-"
             ) && fields[8] == "in" &&
-            (fields[9] == "14.550" || fields[9] == "24.550")) {
+            (fields[9] == "19.550" || fields[9] == "29.550")) {
 
             long long eventID = std::stoll(fields[0]);
             eventMap[eventID].push_back(line);

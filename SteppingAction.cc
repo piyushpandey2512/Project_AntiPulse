@@ -78,7 +78,7 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     // --- Logic for the MULTI-MODULE setup ---
     if (volumeName == "Scintillator") 
     {
-        // Deviation WITHIN a single multi-module scintillator (Intra-Module)
+        // Deviation WITHIN a single module(Intra-Module)
         if (preStepPoint->GetStepStatus() == fGeomBoundary) {
             fEventAction->StoreIntraModuleMomentum(track, preStepPoint->GetMomentum());
         }
