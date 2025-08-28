@@ -69,15 +69,16 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateNtupleDColumn("vx");
     manager->CreateNtupleDColumn("vy");
     manager->CreateNtupleDColumn("vz");
+    manager->CreateNtupleIColumn("sourceID");
     manager->FinishNtuple();
 
     // Create histograms
 
 
     manager->CreateH3("SourceXYZDistribution", "Primary Particle Source Position;X (cm);Y (cm);Z (cm)",
-                  50, -12.0, -4.0,    // X-axis: 50 bins from -12 cm to -4 cm
+                  50, -12.0, -4.0,    // X-axis: 50 manager->CreateH1("SourceIDHist", "Source ID", 3, 0.5, 3.5); // Histogram for source IDs 1, 2, 3bins from -12 cm to -4 cm
                   50,  0.0,  7.0,     // Y-axis: 50 bins from 0 cm to 7 cm
-                  100, -60.0, 60.0);   // Z-axis: 100 bins from -60 cm to 60 cm
+                  101, -60.6, 60.6);   // Z-axis: 100 bins from -60 cm to 60 cm
 
     CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers (Copy Number)", 400, 0, 400);
     CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions (MeV)", 100, 0, 10);
@@ -88,7 +89,9 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
     manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
     manager->CreateH1("SingleScintDeviation", "Angular Deviation in Test Scintillator;Angle (degrees);Counts", 100, 0, 10);
-    manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 100, 0, 10);   
+    manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 100, 0, 10);
+    manager->CreateH1("SourceIDHist", "Source ID", 3, -0.5, 2.5); // Histogram for source IDs 1, 2, 3
+    manager->CreateH1("ZDist", "Source Z Position", 200, -60, 60); 
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)
