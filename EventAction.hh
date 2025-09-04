@@ -27,7 +27,7 @@ public:
     void StoreInterModuleMomentum(const G4Track* track, const G4ThreeVector& momentum);
     G4ThreeVector GetInterModuleMomentum(const G4Track* track) const;
 
-        // --- NEW METHODS FOR THE SINGLE SCINTILLATOR TEST ---
+    // --- NEW METHODS FOR THE SINGLE SCINTILLATOR TEST ---
     void StoreSingleScintMomentum(G4int trackID, const G4ThreeVector& momentum);
     G4ThreeVector GetSingleScintMomentum(G4int trackID);
 
