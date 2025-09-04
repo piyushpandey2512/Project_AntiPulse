@@ -88,6 +88,36 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
 
 
     // =======================================================================
+    // --- NEW LOGIC: Record detailed hits on the SOLID COUNTER ---
+    // =======================================================================
+    if (volumeName == "SolidCounterLog") {
+        // 1. Get the total energy deposited in this step.
+        G4double energyDeposit = aStep->GetTotalEnergyDeposit();
+
+        // 2. We only want to record hits that actually deposit energy.
+        if (energyDeposit > 0.0) {
+            G4AnalysisManager* manager = G4AnalysisManager::Instance();
+            
+            // 3. Get the position of the hit (the pre-step point).
+            G4ThreeVector position = preStepPoint->GetPosition();
+            G4double x = position.x() / cm;
+            G4double y = position.y() / cm;
+            G4double z = position.z() / cm;
+
+            // 4. (Optional) Print the X and Y coordinates to the console for immediate feedback.
+            G4cout << "Counter Hit Recorded at (X, Y) = (" << x << " cm, " << y << " cm)" << G4endl;
+
+            // 5. Fill the new n-tuple (ID 2) with the hit information.
+            manager->FillNtupleDColumn(2, 0, x);
+            manager->FillNtupleDColumn(2, 1, y);
+            manager->FillNtupleDColumn(2, 2, z);
+            manager->FillNtupleDColumn(2, 3, energyDeposit / MeV);
+            manager->AddNtupleRow(2);
+        }
+    }
+
+
+    // =======================================================================
     // --- ORIGINAL LOGIC: Detailed data logging for Scintillators ---
     // This code is UNCHANGED and will only be reached if the step was not
     // a primary particle entering a grating opening or the solid counter.

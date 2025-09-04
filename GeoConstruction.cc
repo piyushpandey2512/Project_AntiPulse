@@ -14,7 +14,7 @@ G4bool overlapCheck = true;
 
 
 // Toggle these to select the setup you want
-bool useSTLGeometry = true;
+bool useSTLGeometry = false;
 bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = true;
 bool useTestScintillator = false;
@@ -136,7 +136,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
  // =======================================================================
         // --- MODIFICATION: Create a THICK Solid Counter Detector ---
         // We make it 10 cm thick along the Z-axis to act as a beam dump.
-        G4double counter_halfZ = 5.0 * cm / 2.0;
+        G4double counter_halfZ = 10.0 * cm / 2.0;
         G4Box* solidCounter_box = new G4Box("SolidCounterBox", grating_halfX, grating_halfY, counter_halfZ);
         fSolidCounterLogical = new G4LogicalVolume(solidCounter_box, fSiMaterial, "SolidCounterLog");
 

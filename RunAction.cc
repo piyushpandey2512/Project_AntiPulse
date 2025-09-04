@@ -86,6 +86,14 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateNtupleIColumn("sourceID");
     manager->FinishNtuple();
 
+    // Counter Hits
+    manager->CreateNtuple("CounterHits", "Hits on the Final Counter Detector");
+    manager->CreateNtupleDColumn("x_pos_cm"); // Column 0
+    manager->CreateNtupleDColumn("y_pos_cm"); // Column 1
+    manager->CreateNtupleDColumn("z_pos_cm"); // Column 2
+    manager->CreateNtupleDColumn("edep_MeV"); // Column 3
+    manager->FinishNtuple(2); // Finish ntuple with ID 2
+
     // Create histograms
 
 
