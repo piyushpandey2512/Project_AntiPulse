@@ -105,14 +105,14 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
             G4double z = position.z() / cm;
 
             // 4. (Optional) Print the X and Y coordinates to the console for immediate feedback.
-            G4cout << "Counter Hit Recorded at (X, Y) = (" << x << " cm, " << y << " cm)" << G4endl;
+            // G4cout << "Counter Hit Recorded at (X, Y) = (" << x << " cm, " << y << " cm)" << G4endl;
 
             // 5. Fill the new n-tuple (ID 2) with the hit information.
-            manager->FillNtupleDColumn(2, 0, x);
-            manager->FillNtupleDColumn(2, 1, y);
-            manager->FillNtupleDColumn(2, 2, z);
-            manager->FillNtupleDColumn(2, 3, energyDeposit / MeV);
-            manager->AddNtupleRow(2);
+            manager->FillNtupleDColumn(3, 0, x);
+            manager->FillNtupleDColumn(3, 1, y);
+            manager->FillNtupleDColumn(3, 2, z);
+            manager->FillNtupleDColumn(3, 3, energyDeposit / MeV);
+            manager->AddNtupleRow(3);
         }
     }
 
