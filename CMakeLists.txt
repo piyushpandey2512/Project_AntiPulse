@@ -31,7 +31,7 @@ link_directories(
 )
 
 # Add executable
-add_executable(AntiPulse Project_AntiPulse.cc ${sources} ${headers})
+add_executable(AntiPulse Project_AntiPulse.cc GratingHit.cc ${sources} ${headers})
 
 # Link libraries
 target_link_libraries(AntiPulse

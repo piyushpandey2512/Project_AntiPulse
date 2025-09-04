@@ -36,6 +36,12 @@ private:
 	G4LogicalVolume* l5TTrapLogic = nullptr;
 	G4LogicalVolume* moLogic = nullptr;
 	G4LogicalVolume* fScintLogical=nullptr;
+	G4Material* fSiMaterial = nullptr;
+	G4LogicalVolume* fGratingWallLogical = nullptr;
+	G4LogicalVolume* fSolidCounterLogical = nullptr;
+	
+
+	G4LogicalVolume* fGratingOpeningLogical = nullptr;
  
 	std::vector<G4ThreeVector> modulePositions;
     std::vector<G4ThreeVector> sources;

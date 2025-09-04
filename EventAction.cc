@@ -8,8 +8,11 @@
 #include "HitBuffer.hh"
 #include <algorithm>
 #include <cmath>
+#include "GratingHit.hh"
+#include "G4SDManager.hh"
 
-MyEventAction::MyEventAction(MyRunAction*)
+MyEventAction::MyEventAction(MyRunAction* runAction)
+: fRunAction(runAction)
 {
     fEnergyDeposition = 0;
 }
@@ -30,59 +33,6 @@ void MyEventAction::EndOfEventAction(const G4Event* event)
     manager->FillNtupleDColumn(1, 0, fEnergyDeposition); // Column 0 in ntuple 1
     manager->AddNtupleRow(1);
 
-    // ---- Vertex reconstruction: z = +45 cm plane ----
-    for (const auto& front : frontHits45) {
-        G4int trackID = front.first;
-        if (backHits45.count(trackID)) {
-            const auto& p1 = front.second.pos_cm;
-            const auto& p2 = backHits45[trackID].pos_cm;
-
-            G4double dx = p2.x() - p1.x();
-            if (dx == 0) continue;
-
-            G4double t = -p1.x() / dx;
-            G4double y0 = p1.y() + t * (p2.y() - p1.y());
-            G4double z0 = p1.z();  // z stays same in this plane
-
-            manager->FillH2(0, z0, y0);
-        }
-    }
-
-    // ---- Vertex reconstruction: z = -45 cm plane ----
-    for (const auto& front : frontHitsMinus45) {
-        G4int trackID = front.first;
-        if (backHitsMinus45.count(trackID)) {
-            const auto& p1 = front.second.pos_cm;
-            const auto& p2 = backHitsMinus45[trackID].pos_cm;
-
-            G4double dx = p2.x() - p1.x();
-            if (dx == 0) continue;
-
-            G4double t = -p1.x() / dx;
-            G4double y0 = p1.y() + t * (p2.y() - p1.y());
-            G4double z0 = p1.z();  // z stays same in this plane
-
-            manager->FillH2(0, z0, y0);
-        }
-    }
-
-    // Clear buffers after processing
-    ClearHitBuffers();
-
-    // ---- Angular deviation calculation ----
-    if (hasFront && hasBack) {
-        G4ThreeVector direction = fBackPosition - fFrontPosition;
-        G4ThreeVector reference = G4ThreeVector(0, 0, 1); // Z-axis reference
-
-        if (direction.mag() > 0) {
-            G4double cosTheta = direction.unit().dot(reference);
-            cosTheta = std::clamp(cosTheta, -1.0, 1.0);
-            G4double angleRad = std::acos(cosTheta);
-            G4double angleDeg = angleRad * (180.0 / CLHEP::pi);
-
-            manager->FillH1(manager->GetH1Id("AngularDeviation"), angleDeg);
-        }
-    }
 
     // ---- Print event summary ----
     auto eventID = event->GetEventID();
@@ -91,6 +41,77 @@ void MyEventAction::EndOfEventAction(const G4Event* event)
         G4cout << "--> Event " << eventID << " completed. Total energy: "
                << G4BestUnit(fEnergyDeposition, "Energy") << G4endl;
     }
+// =======================================================================
+    // --- TASK 5: HIERARCHICAL GRATING PARTICLE COUNTING (Your New Logic) ---
+    // This is the new code to analyze the grating hits.
+    
+    G4SDManager* sdManager = G4SDManager::GetSDMpointer();
+    G4int hcID = sdManager->GetCollectionID("GratingCounterHitsCollection");
+    if (hcID < 0) return; // If the collection doesn't exist, do nothing.
+
+    auto hitsCollection = static_cast<GratingHitsCollection*>(event->GetHCofThisEvent()->GetHC(hcID));
+    if (!hitsCollection || hitsCollection->entries() == 0) return; // If no hits, do nothing.
+
+    // --- Analysis Logic ---
+    bool hitG1_passed = false;
+    bool hitG2_passed = false;
+    bool hitC3 = false;
+
+    // --- ADD THESE NEW FLAGS ---
+    bool hitG1_absorbed = false;
+    bool hitG2_absorbed = false;
+
+    // Loop through all the hits from the primary particle in this event
+    for (size_t i = 0; i < hitsCollection->entries(); ++i) {
+        GratingHit* hit = (*hitsCollection)[i];
+        
+        // We only care about pass-through events (positive detector ID)
+        if (hit->GetDetectorNb() == 1) hitG1_passed = true;
+        if (hit->GetDetectorNb() == 2) hitG2_passed = true;
+        if (hit->GetDetectorNb() == 3) hitC3 = true;
+
+        // --- NEW ABSORPTION CHECKS ---
+        if (hit->GetDetectorNb() == -1) hitG1_absorbed = true;
+        if (hit->GetDetectorNb() == -2) hitG2_absorbed = true;
+    }
+
+    // Check the conditions hierarchically and update the RunAction counters
+    if (hitG1_passed) {
+        fRunAction->AddPassedG1();
+        if (hitG2_passed) {
+            fRunAction->AddPassedG2();
+            if (hitC3) {
+                fRunAction->AddHitCounter();
+            }
+        }
+        // If it passed G1, it could not have been absorbed by G2 without passing G1 first.
+        // So we check for G2 absorption here.
+        else if (hitG2_absorbed) {
+             fRunAction->AddAbsorbedG2();
+        }
+    }
+    // If it did NOT pass G1, check if it was absorbed by G1.
+    else if (hitG1_absorbed) {
+        fRunAction->AddAbsorbedG1();
+    }
+    // --- Histogram Filling ---
+    G4int gratingHistId = manager->GetH1Id("GratingInteractions");
+
+    // Fill the histogram based on what happened in the event
+    // Bin 0: G1 Absorbed
+    // Bin 1: G1 Passed
+    // Bin 2: G2 Absorbed
+    // Bin 3: G2 Passed
+    // Bin 4: C3 Hit
+    if (hitG1_absorbed) manager->FillH1(gratingHistId, 0);
+    if (hitG1_passed)   manager->FillH1(gratingHistId, 1);
+    
+    if (hitG2_absorbed) manager->FillH1(gratingHistId, 2);
+    if (hitG2_passed)   manager->FillH1(gratingHistId, 3);
+
+    if (hitC3)          manager->FillH1(gratingHistId, 4);
+    // Bin 5 is unused for now.
+    // ----------------------------------------------------------------------
 }
 
 void MyEventAction::SetFrontPoint(const G4ThreeVector& front) {

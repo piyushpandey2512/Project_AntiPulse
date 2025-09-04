@@ -49,6 +49,8 @@ private:
     // --- NEW MEMBER for the single scintillator ---
     std::map<G4int, G4ThreeVector> fSingleScintMomentumMap;
     std::map<G4int, G4ThreeVector> fB2BFrontMomentumMap;
+
+    MyRunAction* fRunAction;
 };
 
 #endif

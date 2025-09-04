@@ -19,6 +19,7 @@ public:
 //Build() is the virtual function of class G4VUserActionInitialization
 
 	virtual void Build() const; 
+	virtual void BuildForMaster() const override;
 
 private:
     G4String fOutputFileName;

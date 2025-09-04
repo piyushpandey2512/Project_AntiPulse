@@ -10,10 +10,11 @@ using namespace std;
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
 bool useThreeSourceCone = false;
 bool useConeSourceTowardScintillator = false;
-bool useMoireSource = true;
+bool useMoireSource = false;
 bool useTestSingleSource = false;
 bool useConeSourceTowardSingleModule = false;
 bool useConeSourceTowardFourModules = false;
+bool useAntiprotonBeam = true;
 
 MyPrimaryParticles::MyPrimaryParticles()
 {
@@ -38,8 +39,45 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
     G4ParticleDefinition* piZero  = particleTable->FindParticle("pi0");
     G4ParticleDefinition* kPlus   = particleTable->FindParticle("kaon+");
     G4ParticleDefinition* kMinus  = particleTable->FindParticle("kaon-");
+    G4ParticleDefinition* antiproton = particleTable->FindParticle("anti_proton");
 
+/***********************************************************************/
 
+    if (useAntiprotonBeam) {
+        // --- 1. Define the Particle Type ---
+
+        if (!antiproton) {
+            G4Exception("PrimaryGenerator::GeneratePrimaries",
+                        "MyCode0001", FatalException,
+                        "Particle 'anti_proton' not found.");
+            return;
+        }
+
+        // --- 2. Define Beam Properties ---
+        G4double beam_energy   = 10.0 * keV;
+        G4double beam_radius   = 5.0 * cm; // A 5cm radius circle fully covers a 7cm x 7cm square
+        G4double start_z       = -60.0 * cm; // Start 10cm before the first grating at z=-50cm
+        G4ThreeVector beam_dir = G4ThreeVector(0, 0, 1); // Pointing along +Z axis
+
+        // --- 3. Generate a Random Position within the Cylindrical Beam Area ---
+        // We use sqrt(G4UniformRand()) to ensure a uniform spatial distribution
+        // across the circular area, not bunched up in the center.
+        G4double r = beam_radius * std::sqrt(G4UniformRand());
+        G4double phi = 2.0 * CLHEP::pi * G4UniformRand();
+        G4double x_pos = r * std::cos(phi);
+        G4double y_pos = r * std::sin(phi);
+
+        G4ThreeVector start_position(x_pos, y_pos, start_z);
+
+        // --- 4. Configure the Particle Gun ---
+        fParticleGun->SetParticleDefinition(antiproton);
+        fParticleGun->SetParticleEnergy(beam_energy);
+        fParticleGun->SetParticlePosition(start_position);
+        fParticleGun->SetParticleMomentumDirection(beam_dir);
+        
+        // --- 5. Generate the Particle ---
+        fParticleGun->GeneratePrimaryVertex(anEvent);
+    }
 
 
 /***********************************************************************/
@@ -341,138 +379,141 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 
 /***********************************************************************/
 
-    if (useMoireSource) {
-            // 1. Define the position of the STL object in the world frame.
-            G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 
-            // 2. Define source center positions in the STL's *local* frame.
-            std::vector<G4ThreeVector> localSourcePositions = {
-                G4ThreeVector(0, 0, 0),       // Center of STL
-                G4ThreeVector(0, 0, 50 * cm), // Offset along STL local +Z
-                G4ThreeVector(0, 0, -50 * cm) // Offset along STL local -Z
-            };
+// Random source selection
 
-            // 3. Transform local positions to world coordinates.
-            std::vector<G4ThreeVector> sourcePositions;
-            for (const auto& localPos : localSourcePositions) {
-                G4ThreeVector worldPos = localPos + stlPosition;
-                sourcePositions.push_back(worldPos);
-            }
+    // if (useMoireSource) {
+    //         // 1. Define the position of the STL object in the world frame.
+    //         G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 
-            // Define the dimensions of the source volume (a thin box).
-            G4double boxHalfX = 7.0 * cm / 2.0;
-            G4double boxHalfY = 7.0 * cm / 2.0;
-            G4double boxHalfZ = 250.0 * micrometer / 2.0;
+    //         // 2. Define source center positions in the STL's *local* frame.
+    //         std::vector<G4ThreeVector> localSourcePositions = {
+    //             G4ThreeVector(0, 0, 0),       // Center of STL
+    //             G4ThreeVector(0, 0, 50 * cm), // Offset along STL local +Z
+    //             G4ThreeVector(0, 0, -50 * cm) // Offset along STL local -Z
+    //         };
 
-            // Define the average centers of the LEFT and RIGHT detector arms for aiming.
-            G4ThreeVector rightArmCenter(25.8 * cm, 0.0,  30.0 * cm);
-            G4ThreeVector leftArmCenter (25.8 * cm, 0.0, -30.0 * cm);
+    //         // 3. Transform local positions to world coordinates.
+    //         std::vector<G4ThreeVector> sourcePositions;
+    //         for (const auto& localPos : localSourcePositions) {
+    //             G4ThreeVector worldPos = localPos + stlPosition;
+    //             sourcePositions.push_back(worldPos);
+    //         }
 
-            // Define the opening angle of the emission cone.
-            G4double coneHalfAngle = 40.0 * deg;
+    //         // Define the dimensions of the source volume (a thin box).
+    //         G4double boxHalfX = 7.0 * cm / 2.0;
+    //         G4double boxHalfY = 7.0 * cm / 2.0;
+    //         G4double boxHalfZ = 250.0 * micrometer / 2.0;
 
-            // Get the singleton instance of the G4AnalysisManager.
-            auto analysisManager = G4AnalysisManager::Instance();
-            auto particleTable = G4ParticleTable::GetParticleTable();
+    //         // Define the average centers of the LEFT and RIGHT detector arms for aiming.
+    //         G4ThreeVector rightArmCenter(25.8 * cm, 0.0,  30.0 * cm);
+    //         G4ThreeVector leftArmCenter (25.8 * cm, 0.0, -30.0 * cm);
 
-            //================================================================
-            // PARTICLE GENERATION LOGIC
-            //================================================================
+    //         // Define the opening angle of the emission cone.
+    //         G4double coneHalfAngle = 40.0 * deg;
 
-            // --- KEY CHANGE: Select ONE source position randomly for this event ---
-            // Instead of looping, we pick one source index (0, 1, or 2).
-            // This ensures a balanced generation from all three sources over the entire run.
-            G4int sourceID = static_cast<G4int>(G4UniformRand() * sourcePositions.size());
-            const auto& sourceCenter = sourcePositions[sourceID];
+    //         // Get the singleton instance of the G4AnalysisManager.
+    //         auto analysisManager = G4AnalysisManager::Instance();
+    //         auto particleTable = G4ParticleTable::GetParticleTable();
 
-            // Generate a random position *within* the chosen source box.
-            G4double rx = (G4UniformRand() - 0.5) * (2.0 * boxHalfX);  
-            G4double ry = (G4UniformRand() - 0.5) * (2.0 * boxHalfY);
-            G4double rz = (G4UniformRand() - 0.5) * (2.0 * boxHalfZ);
-            G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+    //         //================================================================
+    //         // PARTICLE GENERATION LOGIC
+    //         //================================================================
 
-            int mySourceIDHist = analysisManager->GetH1Id("SourceIDHist");
-            analysisManager->FillH1( mySourceIDHist , sourceID );
+    //         // --- KEY CHANGE: Select ONE source position randomly for this event ---
+    //         // Instead of looping, we pick one source index (0, 1, or 2).
+    //         // This ensures a balanced generation from all three sources over the entire run.
+    //         G4int sourceID = static_cast<G4int>(G4UniformRand() * sourcePositions.size());
+    //         const auto& sourceCenter = sourcePositions[sourceID];
 
-            // --- MODIFICATION: Fill ntuple with source vertex position AND the Source ID ---
-            // We assume your ntuple ID is 2, and columns are X, Y, Z, SourceID.
-            // The SourceID is crucial for creating color-coded plots later.
-            analysisManager->FillNtupleDColumn(2, 0, sourcePos.x() / cm);
-            analysisManager->FillNtupleDColumn(2, 1, sourcePos.y() / cm);
-            analysisManager->FillNtupleDColumn(2, 2, sourcePos.z() / cm);
-            analysisManager->FillNtupleIColumn(2, 3, sourceID); // Store which source it came from (0, 1, or 2)
-            analysisManager->AddNtupleRow(2);
+    //         // Generate a random position *within* the chosen source box.
+    //         G4double rx = (G4UniformRand() - 0.5) * (2.0 * boxHalfX);  
+    //         G4double ry = (G4UniformRand() - 0.5) * (2.0 * boxHalfY);
+    //         G4double rz = (G4UniformRand() - 0.5) * (2.0 * boxHalfZ);
+    //         G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
 
-            // Fill the 3D histogram with the source position.
-            auto h3id = analysisManager->GetH3Id("SourceXYZDistribution");
-            analysisManager->FillH3(h3id, sourcePos.x() / cm, sourcePos.y() / cm, sourcePos.z() / cm);
+    //         int mySourceIDHist = analysisManager->GetH1Id("SourceIDHist");
+    //         analysisManager->FillH1( mySourceIDHist , sourceID );
+
+    //         // --- MODIFICATION: Fill ntuple with source vertex position AND the Source ID ---
+    //         // We assume your ntuple ID is 2, and columns are X, Y, Z, SourceID.
+    //         // The SourceID is crucial for creating color-coded plots later.
+    //         analysisManager->FillNtupleDColumn(2, 0, sourcePos.x() / cm);
+    //         analysisManager->FillNtupleDColumn(2, 1, sourcePos.y() / cm);
+    //         analysisManager->FillNtupleDColumn(2, 2, sourcePos.z() / cm);
+    //         analysisManager->FillNtupleIColumn(2, 3, sourceID); // Store which source it came from (0, 1, or 2)
+    //         analysisManager->AddNtupleRow(2);
+
+    //         // Fill the 3D histogram with the source position.
+    //         auto h3id = analysisManager->GetH3Id("SourceXYZDistribution");
+    //         analysisManager->FillH3(h3id, sourcePos.x() / cm, sourcePos.y() / cm, sourcePos.z() / cm);
 
 
-            // Fill 1D histograms for X, Y, Z distributions.
-            int zDistID = analysisManager->GetH1Id("ZDist");
-            analysisManager->FillH1(zDistID, sourcePos.z()/cm);
+    //         // Fill 1D histograms for X, Y, Z distributions.
+    //         int zDistID = analysisManager->GetH1Id("ZDist");
+    //         analysisManager->FillH1(zDistID, sourcePos.z()/cm);
 
-            // Select particle type and energy.
-            G4ParticleDefinition* particle;
-            G4double energy;
-            G4double rand = G4UniformRand();
+    //         // Select particle type and energy.
+    //         G4ParticleDefinition* particle;
+    //         G4double energy;
+    //         G4double rand = G4UniformRand();
             
-            if (rand < 0.60) {
-                particle = (G4UniformRand() < 0.5) ? particleTable->FindParticle("pi+") : particleTable->FindParticle("pi-");
-                energy = 230 * MeV;
-            }
-            else if (rand < 0.80) {
-                particle = particleTable->FindParticle("pi0");
-                energy = 230 * MeV;
-            }
-            else if (rand < 0.96) {
-                particle = (G4UniformRand() < 0.5) ? particleTable->FindParticle("kaon+") : particleTable->FindParticle("kaon-");
-                energy = 150*MeV + 250*MeV*G4UniformRand();
-            }
-            else {
-                // Skip this event if it's an eta meson or other unwanted particle.
-                // Returning here means this event will have no primary particle.
-                return; 
-            }
+    //         if (rand < 0.60) {
+    //             particle = (G4UniformRand() < 0.5) ? particleTable->FindParticle("pi+") : particleTable->FindParticle("pi-");
+    //             energy = 230 * MeV;
+    //         }
+    //         else if (rand < 0.80) {
+    //             particle = particleTable->FindParticle("pi0");
+    //             energy = 230 * MeV;
+    //         }
+    //         else if (rand < 0.96) {
+    //             particle = (G4UniformRand() < 0.5) ? particleTable->FindParticle("kaon+") : particleTable->FindParticle("kaon-");
+    //             energy = 150*MeV + 250*MeV*G4UniformRand();
+    //         }
+    //         else {
+    //             // Skip this event if it's an eta meson or other unwanted particle.
+    //             // Returning here means this event will have no primary particle.
+    //             return; 
+    //         }
 
-            // --- AIMING LOGIC ---
-            // Determine where to aim the cone based on which source was chosen.
-            G4ThreeVector aimPoint;
-            if (sourceCenter.z() > 4 * cm) { // This is the Z=+50 cm source (sourceID 1)
-                aimPoint = rightArmCenter;
-            } else if (sourceCenter.z() < -4 * cm) { // This is the Z=-50 cm source (sourceID 2)
-                aimPoint = leftArmCenter; 
-            } else { // This is the central Z=0 cm source (sourceID 0)
-                // Randomly aim at either arm for symmetric illumination.
-                aimPoint = (G4UniformRand() < 0.5) ? rightArmCenter : leftArmCenter;
-            }
+    //         // --- AIMING LOGIC ---
+    //         // Determine where to aim the cone based on which source was chosen.
+    //         G4ThreeVector aimPoint;
+    //         if (sourceCenter.z() > 4 * cm) { // This is the Z=+50 cm source (sourceID 1)
+    //             aimPoint = rightArmCenter;
+    //         } else if (sourceCenter.z() < -4 * cm) { // This is the Z=-50 cm source (sourceID 2)
+    //             aimPoint = leftArmCenter; 
+    //         } else { // This is the central Z=0 cm source (sourceID 0)
+    //             // Randomly aim at either arm for symmetric illumination.
+    //             aimPoint = (G4UniformRand() < 0.5) ? rightArmCenter : leftArmCenter;
+    //         }
 
-            // --- CONE EMISSION LOGIC ---
-            // 1. Define the cone axis from the particle's actual origin to the aim point.
-            G4ThreeVector coneAxis = (aimPoint - sourcePos).unit();
+    //         // --- CONE EMISSION LOGIC ---
+    //         // 1. Define the cone axis from the particle's actual origin to the aim point.
+    //         G4ThreeVector coneAxis = (aimPoint - sourcePos).unit();
 
-            // 2. Sample a random direction within the defined cone.
-            G4double cosThetaMax = std::cos(coneHalfAngle);
-            G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
-            G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
-            G4double phi = 2.0 * CLHEP::pi * G4UniformRand();
+    //         // 2. Sample a random direction within the defined cone.
+    //         G4double cosThetaMax = std::cos(coneHalfAngle);
+    //         G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
+    //         G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+    //         G4double phi = 2.0 * CLHEP::pi * G4UniformRand();
             
-            G4ThreeVector randomDirection(sinTheta * std::cos(phi),
-                                        sinTheta * std::sin(phi),
-                                        cosTheta);
+    //         G4ThreeVector randomDirection(sinTheta * std::cos(phi),
+    //                                     sinTheta * std::sin(phi),
+    //                                     cosTheta);
 
-            // 3. Rotate this randomly generated vector so it's oriented along the coneAxis.
-            G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+    //         // 3. Rotate this randomly generated vector so it's oriented along the coneAxis.
+    //         G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-            // --- PARTICLE GUN CONFIGURATION ---
-            fParticleGun->SetParticleDefinition(particle);
-            fParticleGun->SetParticlePosition(sourcePos);
-            fParticleGun->SetParticleMomentumDirection(finalDirection);
-            fParticleGun->SetParticleEnergy(energy);
+    //         // --- PARTICLE GUN CONFIGURATION ---
+    //         fParticleGun->SetParticleDefinition(particle);
+    //         fParticleGun->SetParticlePosition(sourcePos);
+    //         fParticleGun->SetParticleMomentumDirection(finalDirection);
+    //         fParticleGun->SetParticleEnergy(energy);
             
-            // Generate the primary vertex for this event.
-            fParticleGun->GeneratePrimaryVertex(anEvent);
-        }
+    //         // Generate the primary vertex for this event.
+    //         fParticleGun->GeneratePrimaryVertex(anEvent);
+    //     }
 
 
 
@@ -481,126 +522,126 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
 // Original one with cone toward average of both arms
 
 
-    // if (useMoireSource) {
-    //     G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
+    if (useMoireSource) {
+        G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 
         
-    //     // 2. Define source positions in the STL's *local* frame
-    //     std::vector<G4ThreeVector> localSourcePositions = {
-    //         G4ThreeVector(0, 0, 0),                  // Center of STL
-    //         G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
-    //         G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
-    //     };
+        // 2. Define source positions in the STL's *local* frame
+        std::vector<G4ThreeVector> localSourcePositions = {
+            G4ThreeVector(0, 0, 0),                  // Center of STL
+            G4ThreeVector(0, 0, 50 * cm),          // Offset along STL local Z
+            G4ThreeVector(0, 0, -50 * cm)          // Offset along STL local -Z
+        };
 
-    //     // 3. Transform local positions to world coordinates
-    //     std::vector<G4ThreeVector> sourcePositions;
-    //     for (const auto& localPos : localSourcePositions) {
-    //         G4ThreeVector worldPos = localPos + stlPosition;
-    //         sourcePositions.push_back(worldPos);
-    //     }
-
-
-    //     // Define the dimensions of the source box (using your physically correct thick source)
-    //     G4double boxHalfX = 7.0 * cm / 2.0;
-    //     G4double boxHalfY = 7.0 * cm / 2.0;
-    //     G4double boxHalfZ = 250.0 * micrometer / 2.0;
-
-    //     // 1. Define the average centers of the LEFT and RIGHT detector arms.
-    //     G4ThreeVector rightArmCenter(25.8 * cm, 0.0,  30.0 * cm);
-    //     G4ThreeVector leftArmCenter (25.8 * cm, 0.0, -30.0 * cm);
-
-    //     // 2. Define the opening angle of the emission cone. This is a key parameter to tune.
-    //     //    A larger angle ensures all detectors are illuminated, especially from the off-axis sources.
-    //     G4double coneHalfAngle = 40 * deg;
+        // 3. Transform local positions to world coordinates
+        std::vector<G4ThreeVector> sourcePositions;
+        for (const auto& localPos : localSourcePositions) {
+            G4ThreeVector worldPos = localPos + stlPosition;
+            sourcePositions.push_back(worldPos);
+        }
 
 
-    //     // --- MODIFICATION: Get the Analysis Manager ---
-    //     // Get the singleton instance of the G4AnalysisManager
-    //     auto analysisManager = G4AnalysisManager::Instance();
+        // Define the dimensions of the source box (using your physically correct thick source)
+        G4double boxHalfX = 7.0 * cm / 2.0;
+        G4double boxHalfY = 7.0 * cm / 2.0;
+        G4double boxHalfZ = 250.0 * micrometer / 2.0;
+
+        // 1. Define the average centers of the LEFT and RIGHT detector arms.
+        G4ThreeVector rightArmCenter(25.8 * cm, 0.0,  30.0 * cm);
+        G4ThreeVector leftArmCenter (25.8 * cm, 0.0, -30.0 * cm);
+
+        // 2. Define the opening angle of the emission cone. This is a key parameter to tune.
+        //    A larger angle ensures all detectors are illuminated, especially from the off-axis sources.
+        G4double coneHalfAngle = 40 * deg;
 
 
-    // // Loop over each of the three source locations
-    // for (const auto& sourceCenter : sourcePositions) {
-    //     // Generate a random position *within* one of the source boxes
-    //     G4double rx = (G4UniformRand() - 0.5) * (2.0 * boxHalfX);  
-    //     G4double ry = (G4UniformRand() - 0.5) * (2.0 * boxHalfY);
-    //     G4double rz = (G4UniformRand() - 0.5) * (2.0 * boxHalfZ);
-    //     G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+        // --- MODIFICATION: Get the Analysis Manager ---
+        // Get the singleton instance of the G4AnalysisManager
+        auto analysisManager = G4AnalysisManager::Instance();
 
-    //     // Select particle type and energy (this logic is unchanged)
-    //     G4ParticleDefinition* particle;
-    //     G4double energy;
-    //     G4double rand = G4UniformRand();
+
+    // Loop over each of the three source locations
+    for (const auto& sourceCenter : sourcePositions) {
+        // Generate a random position *within* one of the source boxes
+        G4double rx = (G4UniformRand() - 0.5) * (2.0 * boxHalfX);  
+        G4double ry = (G4UniformRand() - 0.5) * (2.0 * boxHalfY);
+        G4double rz = (G4UniformRand() - 0.5) * (2.0 * boxHalfZ);
+        G4ThreeVector sourcePos = sourceCenter + G4ThreeVector(rx, ry, rz);
+
+        // Select particle type and energy (this logic is unchanged)
+        G4ParticleDefinition* particle;
+        G4double energy;
+        G4double rand = G4UniformRand();
         
-    //     if (rand < 0.60) {
-    //         particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
-    //         energy = 230 * MeV;
-    //     }
-    //     else if (rand < 0.80) {
-    //         particle = particleTable->FindParticle("pi0");
-    //         energy = 230 * MeV;
-    //     }
-    //     else if (rand < 0.96) {
-    //         particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
-    //         energy = 150*MeV + 250*MeV*G4UniformRand();
-    //     }
-    //     else {
-    //         continue; // Skip eta mesons
-    //     }
+        if (rand < 0.60) {
+            particle = (G4UniformRand() < 0.5) ? piPlus : piMinus;
+            energy = 230 * MeV;
+        }
+        else if (rand < 0.80) {
+            particle = particleTable->FindParticle("pi0");
+            energy = 230 * MeV;
+        }
+        else if (rand < 0.96) {
+            particle = (G4UniformRand() < 0.5) ? kPlus : kMinus;
+            energy = 150*MeV + 250*MeV*G4UniformRand();
+        }
+        else {
+            continue; // Skip eta mesons
+        }
 
-    //     // Fill the ntuple with the source vertex position
-    //     analysisManager->FillNtupleDColumn(2, 0, sourcePos.x() / cm);
-    //     analysisManager->FillNtupleDColumn(2, 1, sourcePos.y() / cm);
-    //     analysisManager->FillNtupleDColumn(2, 2, sourcePos.z() / cm);
-    //     analysisManager->AddNtupleRow(2);
+        // Fill the ntuple with the source vertex position
+        analysisManager->FillNtupleDColumn(2, 0, sourcePos.x() / cm);
+        analysisManager->FillNtupleDColumn(2, 1, sourcePos.y() / cm);
+        analysisManager->FillNtupleDColumn(2, 2, sourcePos.z() / cm);
+        analysisManager->AddNtupleRow(2);
 
-    //     auto h3id = analysisManager->GetH3Id("SourceXYZDistribution");
-    //     analysisManager->FillH3(h3id, sourcePos.x() / cm, sourcePos.y() / cm, sourcePos.z() / cm);
+        auto h3id = analysisManager->GetH3Id("SourceXYZDistribution");
+        analysisManager->FillH3(h3id, sourcePos.x() / cm, sourcePos.y() / cm, sourcePos.z() / cm);
 
-    //     // --- THIS IS THE CORRECTED AIMING LOGIC ---
-    //     G4ThreeVector aimPoint;
-    //     if (sourceCenter.z() > 4 * cm) { // This is the Z=+50 cm source
-    //         aimPoint = rightArmCenter;
-    //     } else if (sourceCenter.z() < -4 * cm) { // This is the Z=-50 cm source
-    //         aimPoint = leftArmCenter; // It now correctly aims at the left arm
-    //     } else { // This is the Z=0 cm source
-    //         // Randomly aim at either arm for symmetric illumination
-    //         if (G4UniformRand() < 0.5) {
-    //             aimPoint = rightArmCenter;
-    //         } else {
-    //             aimPoint = leftArmCenter;
-    //         }
-    //     }
+        // --- THIS IS THE CORRECTED AIMING LOGIC ---
+        G4ThreeVector aimPoint;
+        if (sourceCenter.z() > 4 * cm) { // This is the Z=+50 cm source
+            aimPoint = rightArmCenter;
+        } else if (sourceCenter.z() < -4 * cm) { // This is the Z=-50 cm source
+            aimPoint = leftArmCenter; // It now correctly aims at the left arm
+        } else { // This is the Z=0 cm source
+            // Randomly aim at either arm for symmetric illumination
+            if (G4UniformRand() < 0.5) {
+                aimPoint = rightArmCenter;
+            } else {
+                aimPoint = leftArmCenter;
+            }
+        }
 
-    //     // --- REPLACED ISOTROPIC EMISSION WITH CONE EMISSION ---
+        // --- REPLACED ISOTROPIC EMISSION WITH CONE EMISSION ---
         
-    //     // 3. Define the cone axis: a vector from the particle's actual origin to the detector center.
-    //     //    This must be calculated for each particle because `sourcePos` is randomized.
-    //     G4ThreeVector coneAxis = (aimPoint - sourcePos).unit();
+        // 3. Define the cone axis: a vector from the particle's actual origin to the detector center.
+        //    This must be calculated for each particle because `sourcePos` is randomized.
+        G4ThreeVector coneAxis = (aimPoint - sourcePos).unit();
 
-    //     // 4. Sample a random direction within the defined cone using the provided logic.
-    //     G4double cosThetaMax = std::cos(coneHalfAngle);
-    //     G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
-    //     G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
-    //     G4double phi = 2 * M_PI * G4UniformRand();
+        // 4. Sample a random direction within the defined cone using the provided logic.
+        G4double cosThetaMax = std::cos(coneHalfAngle);
+        G4double cosTheta = cosThetaMax + (1.0 - cosThetaMax) * G4UniformRand();
+        G4double sinTheta = std::sqrt(1.0 - cosTheta * cosTheta);
+        G4double phi = 2 * M_PI * G4UniformRand();
         
-    //     G4ThreeVector randomDirection(sinTheta * std::cos(phi),
-    //                                   sinTheta * std::sin(phi),
-    //                                   cosTheta);
+        G4ThreeVector randomDirection(sinTheta * std::cos(phi),
+                                      sinTheta * std::sin(phi),
+                                      cosTheta);
 
-    //     // 5. Rotate this randomly generated vector so that it is oriented along the coneAxis.
-    //     //    `rotateUz` finds the rotation that maps the Z-axis to the coneAxis and applies it.
-    //     G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
+        // 5. Rotate this randomly generated vector so that it is oriented along the coneAxis.
+        //    `rotateUz` finds the rotation that maps the Z-axis to the coneAxis and applies it.
+        G4ThreeVector finalDirection = randomDirection.rotateUz(coneAxis);
 
-    //     // Configure particle gun with the new directed momentum
-    //     fParticleGun->SetParticleDefinition(particle);
-    //     fParticleGun->SetParticlePosition(sourcePos);
-    //     fParticleGun->SetParticleMomentumDirection(finalDirection); // Use the new direction
-    //     fParticleGun->SetParticleEnergy(energy);
+        // Configure particle gun with the new directed momentum
+        fParticleGun->SetParticleDefinition(particle);
+        fParticleGun->SetParticlePosition(sourcePos);
+        fParticleGun->SetParticleMomentumDirection(finalDirection); // Use the new direction
+        fParticleGun->SetParticleEnergy(energy);
         
-    //     fParticleGun->GeneratePrimaryVertex(anEvent);
-    //     }
-    // }
+        fParticleGun->GeneratePrimaryVertex(anEvent);
+        }
+    }
 
 
 /***********************************************************************/

@@ -8,8 +8,15 @@
 #include <sstream>
 #include <ctime>
 
+
+
 MyRunAction::MyRunAction()
-    : fOutputFileName("Project_AntiPulse") 
+    : fOutputFileName("Project_AntiPulse"),
+    fPassedG1Counter(0),
+    fPassedG2Counter(0),
+    fHitCounterCounter(0),
+    fAbsorbedG1Counter(0),
+    fAbsorbedG2Counter(0)
 {
 }
 
@@ -22,6 +29,13 @@ MyRunAction::~MyRunAction()
 
 void MyRunAction::BeginOfRunAction(const G4Run*)
 {
+
+    fPassedG1Counter = 0;
+    fPassedG2Counter = 0;
+    fHitCounterCounter = 0;
+    fAbsorbedG1Counter = 0;
+    fAbsorbedG2Counter = 0;
+
     // Generate timestamp string
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
@@ -92,6 +106,11 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 100, 0, 10);
     manager->CreateH1("SourceIDHist", "Source ID", 3, -0.5, 2.5); // Histogram for source IDs 1, 2, 3
     manager->CreateH1("ZDist", "Source Z Position", 200, -60, 60); 
+
+    // --- ADD HISTOGRAMS FOR GRATING INTERACTION COUNTS ---
+    manager->CreateH1("GratingInteractions", "Grating Interactions;Type;Counts",
+                      6, 0, 6);
+
 }
 
 void MyRunAction::EndOfRunAction(const G4Run* run)
@@ -102,6 +121,23 @@ void MyRunAction::EndOfRunAction(const G4Run* run)
 
     if (fPionFile.is_open()) {
         fPionFile.close();
+    }
+
+    // =======================================================================
+    // --- PRINT THE FINAL REPORT ---
+    G4int nofEvents = run->GetNumberOfEvent();
+    if (nofEvents > 0) {
+        G4cout << "\n-------------------- Grating Analysis Summary --------------------\n"
+               << " Total Events Processed: " << nofEvents << "\n"
+               << "--------------------------------------------------------------\n"
+               << " Primary particles absorbed by Grating 1 wall: " << fAbsorbedG1Counter << "\n"
+               << " Primary particles absorbed by Grating 2 wall: " << fAbsorbedG2Counter << "\n"
+               << " --- \n"
+               << " Primary particles that passed through Grating 1 opening: " << fPassedG1Counter << "\n"
+               << " Primary particles that passed through G1 AND G2 openings: " << fPassedG2Counter << "\n"
+               << " Primary particles that passed through G1, G2, AND hit the Counter: " << fHitCounterCounter << "\n"
+               << "--------------------------------------------------------------\n"
+               << G4endl;
     }
 }
 

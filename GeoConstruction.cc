@@ -5,13 +5,16 @@
 #include <G4Box.hh>
 #include <vector>
 #include "CADMesh.hh"
+#include "G4PVReplica.hh"
+#include "G4SDManager.hh"
 
 using namespace std;
 
-G4bool overlapCheck = false;
+G4bool overlapCheck = true;
+
 
 // Toggle these to select the setup you want
-bool useSTLGeometry = false;
+bool useSTLGeometry = true;
 bool useFourModuleSetup = false;
 bool useFourModuleSetupNewFEE = true;
 bool useTestScintillator = false;
@@ -19,6 +22,8 @@ bool useTestModulesSetup = false;
 bool useTwoScinB2B = false;
 bool useOneModule = false;
 bool useTwoB2BModules = false;
+bool useMoireGratingSetup = true;
+
 
 MyDetectorConstruction::MyDetectorConstruction() {}
 
@@ -37,6 +42,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     G4VSolid* wSolid = new G4Tubs(wName, 0, wRadius, wLength/2, 0, 360);
     G4LogicalVolume* wLogic = new G4LogicalVolume(wSolid, Gal_mat, "World");
     G4VPhysicalVolume* physWorld = new G4PVPlacement(0, G4ThreeVector(), wLogic, "World", 0, false, 0, overlapCheck);
+
+/*****************************************************************************************************************************/
 
     // --- STL Geometry ---
     if (useSTLGeometry) {
@@ -57,6 +64,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         new G4PVPlacement(rotation, stlPosition, stlLogical, "STLVolume", wLogic, false, 0, overlapCheck);
     }
 
+
+
+/*****************************************************************************************************************************/
     // --- Four Module Setup ---
     if (useFourModuleSetup) {
         cout << "GeoConstruction: Using four module setup" << endl;
@@ -89,6 +99,74 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
             }
         }
     }
+
+
+/*****************************************************************************************************************************/
+    // --- Moiré Grating Setup ---
+    if (useMoireGratingSetup) {
+        cout << "GeoConstruction: Using 2 HORIZONTAL Moiré gratings + 1 Solid Counter setup" << endl;
+
+        // --- 1. Define Dimensions (Unchanged) ---
+        G4double grating_halfX = 7.0 * cm / 2.0;
+        G4double grating_halfY = 7.0 * cm / 2.0;
+        G4double grating_halfZ = 250.0 * micrometer / 2.0;
+
+        // --- This section now builds a SINGLE reusable grating object ---
+        // --- It is completely unchanged. ---
+        G4double pitch         = 100.0 * micrometer;
+        G4double opening_width = 40.0 * micrometer;
+        G4double wall_width    = pitch - opening_width;
+        G4Box* gratingMother_box = new G4Box("GratingMotherBox", grating_halfX, grating_halfY, grating_halfZ);
+        G4LogicalVolume* gratingMother_log = new G4LogicalVolume(gratingMother_box, Gal_mat, "GratingMotherLog");
+        G4Box* slice_box = new G4Box("SliceBox", grating_halfX, pitch / 2.0, grating_halfZ);
+        G4LogicalVolume* slice_log = new G4LogicalVolume(slice_box, Gal_mat, "SliceLog");
+        G4int num_replicas = G4int( (2.0 * grating_halfY) / pitch );
+        new G4PVReplica("GratingReplica", slice_log, gratingMother_log, kYAxis, num_replicas, pitch);
+        G4Box* wall_box = new G4Box("WallBox", grating_halfX, wall_width / 2.0, grating_halfZ);
+        fGratingWallLogical = new G4LogicalVolume(wall_box, fSiMaterial, "WallLog");
+        G4Box* opening_box = new G4Box("OpeningBox", grating_halfX, opening_width / 2.0, grating_halfZ);
+        fGratingOpeningLogical = new G4LogicalVolume(opening_box, Gal_mat, "GratingOpeningLog");
+        G4double wall_pos_y = -opening_width / 2.0;
+        G4double opening_pos_y = wall_width / 2.0;
+        new G4PVPlacement(0, G4ThreeVector(0, wall_pos_y, 0), fGratingWallLogical, "Wall", slice_log, false, 0, true);
+        new G4PVPlacement(0, G4ThreeVector(0, opening_pos_y, 0), fGratingOpeningLogical, "Opening", slice_log, false, 0, true);
+        fGratingWallLogical->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
+        fGratingOpeningLogical->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
+
+ // =======================================================================
+        // --- MODIFICATION: Create a THICK Solid Counter Detector ---
+        // We make it 10 cm thick along the Z-axis to act as a beam dump.
+        G4double counter_halfZ = 5.0 * cm / 2.0;
+        G4Box* solidCounter_box = new G4Box("SolidCounterBox", grating_halfX, grating_halfY, counter_halfZ);
+        fSolidCounterLogical = new G4LogicalVolume(solidCounter_box, fSiMaterial, "SolidCounterLog");
+
+        // --- MODIFICATION: Create new, SOLID visualization attributes for the counter ---
+        G4VisAttributes* visAttCounter = new G4VisAttributes(G4Colour::Red());
+        visAttCounter->SetForceSolid(true); // Make it solid
+        fSolidCounterLogical->SetVisAttributes(visAttCounter);
+        // =======================================================================
+
+        // --- MODIFIED: Final Placement of the components ---
+        G4ThreeVector stlPosition(0.1*cm, 0.0*cm, 0.55*cm);
+        G4ThreeVector center_grating1 = stlPosition;
+        G4ThreeVector center_grating2 = stlPosition + G4ThreeVector(0, 0, -45*cm);
+        
+        // Adjust the counter's Z position to account for its new thickness
+        G4ThreeVector center_counter  = stlPosition + G4ThreeVector(0, 0, 45*cm + counter_halfZ);
+
+
+        // Place the first grating (at Z=0) with copy number 1
+        new G4PVPlacement(0, center_grating1, gratingMother_log, "MoireGrating", wLogic, false, 1, true);
+        
+        // Place the second grating (at Z=-45) with copy number 2
+        new G4PVPlacement(0, center_grating2, gratingMother_log, "MoireGrating", wLogic, false, 2, true);
+        
+        // Place the SOLID COUNTER (at Z=+45) with copy number 3
+        new G4PVPlacement(0, center_counter, fSolidCounterLogical, "SolidCounter", wLogic, false, 3, true);
+    }
+
+/*****************************************************************************************************************************/
+
 
     // --- Four Module Setup (Modified with new FEE) ---
     if (useFourModuleSetupNewFEE) {
@@ -125,6 +203,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         }
     }
 
+
+/*****************************************************************************************************************************/
     // --- Single Test Scintillator ---
     if (useTestScintillator) {
         cout << "GeoConstruction: Using single test scintillator" << endl;
@@ -144,6 +224,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         new G4PVPlacement(0, oneScinPos1, oneScinLogical, "OneScintillator1", wLogic, false, 0, overlapCheck);
         // new G4PVPlacement(0, oneScinPos2, oneScinLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
     }
+
+/*****************************************************************************************************************************/
 
     if (useTestModulesSetup) {
         cout << "GeoConstruction: Using test modules setup" << endl;
@@ -187,6 +269,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         }
     }
 
+/*****************************************************************************************************************************/
+
     if (useTwoScinB2B) {
         cout << "GeoConstruction: Using two scintillators back-to-back" << endl;
         // G4double scinHalfX = 2.5*cm / 2.0;
@@ -206,6 +290,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         new G4PVPlacement(0, oneScinPos2, fScintLogical, "OneScintillator2", wLogic, false, 0, overlapCheck);
 
     }
+
+    /*****************************************************************************************************************************/
 
     if (useOneModule) {
         cout << "GeoConstruction: Using one module" << endl;
@@ -240,6 +326,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     }
 
     }
+
+    /*****************************************************************************************************************************/
 
     if (useTwoB2BModules){
         cout << "GeoConstruction: Using two modules back-to-back" << endl;
@@ -317,16 +405,28 @@ void MyDetectorConstruction::DefineMaterials()
     visAttScin = new G4VisAttributes(G4Colour(0.105, 0.210, 0.810));
     visAttScin->SetForceWireframe(true);
     visAttScin->SetForceSolid(true);
+
+    // Silicon material for the grating walls
+    fSiMaterial = new G4Material("Silicon", 2.3290*g/cm3, 1);
+    fSiMaterial->AddElement(elSi, 1);
 }
+
+
 
 void MyDetectorConstruction::ConstructSDandField()
 {
-    // sensitive detector instance for the scintillators.
-    MySensitiveDetector *scintSD = new MySensitiveDetector("ScintillatorSD");
-    if (fScintLogical != NULL)
-        fScintLogical->SetSensitiveDetector(scintSD);
+    // =======================================================================
+    // --- MODIFICATION: Use ONE Sensitive Detector for EVERYTHING ---
+    // Create one single instance of MySensitiveDetector
+    MySensitiveDetector* masterSD = new MySensitiveDetector("MasterSD");
+    G4SDManager::GetSDMpointer()->AddNewDetector(masterSD);
 
-    MySensitiveDetector *oneScinSD = new MySensitiveDetector("oneScinSD");
-    if (oneScinLogical != NULL)
-        oneScinLogical->SetSensitiveDetector(oneScinSD);
+    // Assign this single instance to all logical volumes that should be sensitive.
+    if (fScintLogical != nullptr) SetSensitiveDetector(fScintLogical, masterSD);
+    if (oneScinLogical != nullptr) SetSensitiveDetector(oneScinLogical, masterSD);
+    if (fGratingWallLogical != nullptr) SetSensitiveDetector(fGratingWallLogical, masterSD);
+    if (fGratingOpeningLogical != nullptr) SetSensitiveDetector(fGratingOpeningLogical, masterSD);
+    if (fSolidCounterLogical != nullptr) SetSensitiveDetector(fSolidCounterLogical, masterSD);
+    // =======================================================================
+
 }

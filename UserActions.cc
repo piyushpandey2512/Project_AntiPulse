@@ -6,6 +6,12 @@ MyAction::MyAction(const G4String& outputFileName)
 MyAction::~MyAction()
 {}
 
+void MyAction::BuildForMaster() const
+{
+    // Master thread only needs a RunAction
+    SetUserAction(new MyRunAction());
+}
+
 void MyAction::Build() const
 {
 	// Add Primary Generator Action
