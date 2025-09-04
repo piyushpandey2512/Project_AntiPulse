@@ -78,7 +78,7 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
 // --- Main Program ---
 int main() {
     // Make sure this path points to the data file from your NEW simulation
-    std::ifstream inFile("../build/PionInteractions_20250903_183308.dat");
+    std::ifstream inFile("../build/PionInteractions_20250904_124304.dat");
     if (!inFile) { std::cerr << "Error: Could not open input file.\n"; return 1; }
     
     // =======================================================================
@@ -103,7 +103,7 @@ int main() {
     // =======================================================================
 
     
-    TFile* outFile = new TFile("ExtrapolatedVertices_FromGratings.root", "RECREATE");
+    TFile* outFile = new TFile("ExtrapolatedVertices_FromGratings1.root", "RECREATE");
     TTree* tree = new TTree("ExtrapolatedVertexTree", "Pion Origins Extrapolated to Gratings");
     long long eventID; int trackID; double vx, vy, vz;
     tree->Branch("eventID", &eventID, "eventID/L"); tree->Branch("trackID", &trackID, "trackID/I");

@@ -53,28 +53,25 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
     G4StepPoint *preStepPoint = aStep->GetPreStepPoint();
     const G4VTouchable* touchable = preStepPoint->GetTouchable();
     G4String volumeName = touchable->GetVolume()->GetLogicalVolume()->GetName();
-
+    
     // =======================================================================
-    // --- LOGIC 1: Collect hits for Primary Antiprotons on Gratings/Counter ---
+    // --- LOGIC 1: Collect hits for Primary Antiprotons on GRATINGS ONLY ---
+    // This logic is prioritized. If a hit is in a grating, we process it here and stop.
     // =======================================================================
     // We only care about the first moment a primary particle (TrackID==1) ENTERS a volume.
     if (preStepPoint->GetStepStatus() == fGeomBoundary && track->GetTrackID() == 1) {
         G4int detectorID = 0;
 
         if (volumeName == "GratingOpeningLog") {
-            // Passed through a grating opening. Get the mother's copy number (1 or 2).
+            // Particle passed through a grating opening. Get the mother's copy number (1 or 2).
             detectorID = touchable->GetCopyNumber(2);
-        }
-        else if (volumeName == "SolidCounterLog") {
-            // Hit the solid counter. Get its copy number (3).
-            detectorID = touchable->GetVolume()->GetCopyNo();
         }
         else if (volumeName == "WallLog") {
             // Hit a silicon wall. Record as a negative number.
             detectorID = -touchable->GetCopyNumber(2);
         }
         
-        // If this was a valid grating or counter hit...
+        // If this was a valid grating hit...
         if (detectorID != 0) {
             // ...create a new hit object.
             GratingHit* newHit = new GratingHit();
@@ -83,6 +80,10 @@ G4bool MySensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhis
             
             // Add the hit to our collection for this event.
             fGratingHitsCollection->insert(newHit);
+            
+            // Return true. This tells Geant4 we've handled this step, and it prevents
+            // the logic below from accidentally processing it.
+            return true;
         }
     }
 

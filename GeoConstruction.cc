@@ -7,6 +7,7 @@
 #include "CADMesh.hh"
 #include "G4PVReplica.hh"
 #include "G4SDManager.hh"
+#include "G4UserLimits.hh"
 
 using namespace std;
 
@@ -116,22 +117,46 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4double pitch         = 100.0 * micrometer;
         G4double opening_width = 40.0 * micrometer;
         G4double wall_width    = pitch - opening_width;
+
+        // Empty container for the whole grating
         G4Box* gratingMother_box = new G4Box("GratingMotherBox", grating_halfX, grating_halfY, grating_halfZ);
         G4LogicalVolume* gratingMother_log = new G4LogicalVolume(gratingMother_box, Gal_mat, "GratingMotherLog");
+
+        // Build one slice of the grating (one pitch) and replicate it
         G4Box* slice_box = new G4Box("SliceBox", grating_halfX, pitch / 2.0, grating_halfZ);
         G4LogicalVolume* slice_log = new G4LogicalVolume(slice_box, Gal_mat, "SliceLog");
+
+        // Create the replicas along Y
         G4int num_replicas = G4int( (2.0 * grating_halfY) / pitch );
         new G4PVReplica("GratingReplica", slice_log, gratingMother_log, kYAxis, num_replicas, pitch);
+
+        // Now build the wall and opening within the slice
         G4Box* wall_box = new G4Box("WallBox", grating_halfX, wall_width / 2.0, grating_halfZ);
         fGratingWallLogical = new G4LogicalVolume(wall_box, fSiMaterial, "WallLog");
         G4Box* opening_box = new G4Box("OpeningBox", grating_halfX, opening_width / 2.0, grating_halfZ);
         fGratingOpeningLogical = new G4LogicalVolume(opening_box, Gal_mat, "GratingOpeningLog");
+
+        // Place the wall and opening within the slice
         G4double wall_pos_y = -opening_width / 2.0;
         G4double opening_pos_y = wall_width / 2.0;
         new G4PVPlacement(0, G4ThreeVector(0, wall_pos_y, 0), fGratingWallLogical, "Wall", slice_log, false, 0, true);
         new G4PVPlacement(0, G4ThreeVector(0, opening_pos_y, 0), fGratingOpeningLogical, "Opening", slice_log, false, 0, true);
-        fGratingWallLogical->SetVisAttributes(new G4VisAttributes(G4Colour::Gray()));
+        fGratingWallLogical->SetVisAttributes(new G4VisAttributes(G4Colour::Magenta()));
         fGratingOpeningLogical->SetVisAttributes(new G4VisAttributes(G4Colour::White()));
+
+        // --- THE CRITICAL FIX: Set User Limits to force small steps ---
+        
+        // 1. Define a maximum allowed step size. It should be smaller than your
+        //    smallest geometric feature (which is the 40 um opening).
+        //    Let's choose 4 micrometers (1/10th of the opening size).
+        G4double maxStepInGrating = 4.0 * micrometer;
+        G4UserLimits* gratingStepLimits = new G4UserLimits(maxStepInGrating);
+
+        // 2. Attach these step limits to BOTH the walls and the openings.
+        //    This is important because it forces small steps even when the particle
+        //    is in the vacuum OPENING, ensuring it doesn't step over the next wall.
+        fGratingWallLogical->SetUserLimits(gratingStepLimits);
+        fGratingOpeningLogical->SetUserLimits(gratingStepLimits);
 
  // =======================================================================
         // --- MODIFICATION: Create a THICK Solid Counter Detector ---
