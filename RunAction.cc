@@ -108,10 +108,10 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH2("Edep2DByProcess", "Energy Deposition by Process;Process Index;Edep (MeV)",
                     13, 0, 13,    // 13 process types, bins 0-12
                     100, 0, 10);  // 0-10 MeV, 100 bins
-    manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
-    manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 180, 0., 180.);
-    manager->CreateH1("SingleScintDeviation", "Angular Deviation in Test Scintillator;Angle (degrees);Counts", 100, 0, 10);
-    manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 100, 0, 10);
+    manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 50, 0., 25.);
+    manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 50, 0., 25.);
+    manager->CreateH1("SingleScintDeviation", "Angular Deviation in Test Scintillator;Angle (degrees);Counts", 40, 0, 2.0);
+    manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 50, 0., 25.);
     manager->CreateH1("SourceIDHist", "Source ID", 3, -0.5, 2.5); // Histogram for source IDs 1, 2, 3
     manager->CreateH1("ZDist", "Source Z Position", 200, -60, 60); 
 
@@ -133,20 +133,20 @@ void MyRunAction::EndOfRunAction(const G4Run* run)
 
     // =======================================================================
     // --- PRINT THE FINAL REPORT ---
-    G4int nofEvents = run->GetNumberOfEvent();
-    if (nofEvents > 0) {
-        G4cout << "\n-------------------- Grating Analysis Summary --------------------\n"
-               << " Total Events Processed: " << nofEvents << "\n"
-               << "--------------------------------------------------------------\n"
-               << " Primary particles absorbed by Grating 1 wall: " << fAbsorbedG1Counter << "\n"
-               << " Primary particles absorbed by Grating 2 wall: " << fAbsorbedG2Counter << "\n"
-               << " --- \n"
-               << " Primary particles that passed through Grating 1 opening: " << fPassedG1Counter << "\n"
-               << " Primary particles that passed through G1 AND G2 openings: " << fPassedG2Counter << "\n"
-               << " Primary particles that passed through G1, G2, AND hit the Counter: " << fHitCounterCounter << "\n"
-               << "--------------------------------------------------------------\n"
-               << G4endl;
-    }
+    // G4int nofEvents = run->GetNumberOfEvent();
+    // if (nofEvents > 0) {
+    //     G4cout << "\n-------------------- Grating Analysis Summary --------------------\n"
+    //            << " Total Events Processed: " << nofEvents << "\n"
+    //            << "--------------------------------------------------------------\n"
+    //            << " Primary particles absorbed by Grating 1 wall: " << fAbsorbedG1Counter << "\n"
+    //            << " Primary particles absorbed by Grating 2 wall: " << fAbsorbedG2Counter << "\n"
+    //            << " --- \n"
+    //            << " Primary particles that passed through Grating 1 opening: " << fPassedG1Counter << "\n"
+    //            << " Primary particles that passed through G1 AND G2 openings: " << fPassedG2Counter << "\n"
+    //            << " Primary particles that passed through G1, G2, AND hit the Counter: " << fHitCounterCounter << "\n"
+    //            << "--------------------------------------------------------------\n"
+    //            << G4endl;
+    // }
 }
 
 void MyRunAction::SetOutputFileName(const G4String& fileName)

@@ -25,6 +25,12 @@ void MyEventAction::BeginOfEventAction(const G4Event*)
     fEnergyDeposition = 0;
     hasFront = false;
     hasBack = false;
+
+        // --- IMPORTANT: Clear all maps at the start of each event ---
+    fIntraModuleMomentumMap.clear();
+    fInterModuleMomentumMap.clear();
+    fSingleScintMomentumMap.clear();
+    fB2BFrontMomentumMap.clear();
 }
 
 void MyEventAction::EndOfEventAction(const G4Event* event)
@@ -125,25 +131,53 @@ void MyEventAction::SetBackPoint(const G4ThreeVector& back) {
 }
 
 
-void MyEventAction::StoreIntraModuleMomentum(const G4Track* track, const G4ThreeVector& momentum) {
-    fIntraModuleMomentumMap[track->GetTrackID()] = momentum;
+// --- IMPLEMENTATION OF MODIFIED AND NEW INTRA-MODULE FUNCTIONS ---
+
+void MyEventAction::StoreIntraModuleMomentum(const G4Track* track, G4int copyNo, const G4ThreeVector& momentum)
+{
+    fIntraModuleMomentumMap[track][copyNo] = momentum;
 }
 
-G4ThreeVector MyEventAction::GetIntraModuleMomentum(const G4Track* track) const {
-    auto it = fIntraModuleMomentumMap.find(track->GetTrackID());
-    if (it != fIntraModuleMomentumMap.end()) return it->second;
-    return G4ThreeVector(0,0,0);
+G4ThreeVector MyEventAction::GetIntraModuleMomentum(const G4Track* track, G4int copyNo) const
+{
+    auto trackIt = fIntraModuleMomentumMap.find(track);
+    if (trackIt != fIntraModuleMomentumMap.end()) {
+        const auto& copyNoMap = trackIt->second;
+        auto copyNoIt = copyNoMap.find(copyNo);
+        if (copyNoIt != copyNoMap.end()) {
+            return copyNoIt->second;
+        }
+    }
+    return G4ThreeVector(); // Return zero vector if not found
 }
 
-void MyEventAction::StoreInterModuleMomentum(const G4Track* track, const G4ThreeVector& momentum) {
-    fInterModuleMomentumMap[track->GetTrackID()] = momentum;
+void MyEventAction::ClearIntraModuleMomentum(const G4Track* track, G4int copyNo)
+{
+    auto trackIt = fIntraModuleMomentumMap.find(track);
+    if (trackIt != fIntraModuleMomentumMap.end()) {
+        trackIt->second.erase(copyNo);
+    }
 }
 
-G4ThreeVector MyEventAction::GetInterModuleMomentum(const G4Track* track) const {
-    auto it = fInterModuleMomentumMap.find(track->GetTrackID());
-    if (it != fInterModuleMomentumMap.end()) return it->second;
-    return G4ThreeVector(0,0,0);
+// --- CORRECTED IMPLEMENTATION OF INTER-MODULE FUNCTIONS ---
+
+void MyEventAction::StoreInterModuleMomentum(const G4Track* track, const G4ThreeVector& momentum)
+{
+    // Use the track pointer as the key, not the track ID
+    fInterModuleMomentumMap[track] = momentum;
 }
+
+G4ThreeVector MyEventAction::GetInterModuleMomentum(const G4Track* track) const
+{
+    // Use the track pointer to find the entry, not the track ID
+    auto it = fInterModuleMomentumMap.find(track);
+    if (it != fInterModuleMomentumMap.end()) {
+        return it->second;
+    }
+    return G4ThreeVector(); // Return zero vector if not found
+}
+
+// --- IMPLEMENTATION OF SINGLE/B2B SCINTILLATOR FUNCTIONS ---
 
 void MyEventAction::StoreSingleScintMomentum(G4int trackID, const G4ThreeVector& momentum)
 {
@@ -156,15 +190,19 @@ G4ThreeVector MyEventAction::GetSingleScintMomentum(G4int trackID)
     if (it != fSingleScintMomentumMap.end()) {
         return it->second;
     }
-    return G4ThreeVector(0,0,0); // Return zero vector if not found
+    return G4ThreeVector();
 }
 
-void MyEventAction::StoreB2BFrontMomentum(G4int trackID, const G4ThreeVector& momentum) {
+void MyEventAction::StoreB2BFrontMomentum(G4int trackID, const G4ThreeVector& momentum)
+{
     fB2BFrontMomentumMap[trackID] = momentum;
 }
 
-G4ThreeVector MyEventAction::GetB2BFrontMomentum(G4int trackID) const {
+G4ThreeVector MyEventAction::GetB2BFrontMomentum(G4int trackID) const
+{
     auto it = fB2BFrontMomentumMap.find(trackID);
-    if (it != fB2BFrontMomentumMap.end()) return it->second;
-    return G4ThreeVector(0,0,0);
+    if (it != fB2BFrontMomentumMap.end()) {
+        return it->second;
+    }
+    return G4ThreeVector();
 }

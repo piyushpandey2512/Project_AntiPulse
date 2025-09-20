@@ -65,6 +65,10 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4StepPoint* postStepPoint = step->GetPostStepPoint();
     G4VPhysicalVolume* volume  = preStepPoint->GetPhysicalVolume();
 
+    // --- DECLARE VOLUMES AT THE TOP ---
+    G4VPhysicalVolume* preVolume = preStepPoint->GetPhysicalVolume();
+    G4VPhysicalVolume* postVolume = postStepPoint->GetPhysicalVolume();
+
     G4String volumeName = volume->GetName();
     G4int copyNumber = volume->GetCopyNo();
 
@@ -72,77 +76,98 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4int trackID = track->GetTrackID();
     G4String particleName = track->GetDefinition()->GetParticleName();
 
-    // ==============================================================================
+// ==============================================================================
     // --- NEW, CORRECTED LOGIC FOR ALL ANGULAR DEVIATION HISTOGRAMS ---
     // ==============================================================================
 
     // --- Logic for the MULTI-MODULE setup ---
-    if (volumeName == "Scintillator") 
+    if (postVolume && postVolume->GetName() == "Scintillator")
     {
-        // Deviation WITHIN a single module(Intra-Module)
-        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
-            fEventAction->StoreIntraModuleMomentum(track, preStepPoint->GetMomentum());
-        }
-        if (postStepPoint->GetStepStatus() == fGeomBoundary) {
-            G4ThreeVector entryMomentum = fEventAction->GetIntraModuleMomentum(track);
-            if (entryMomentum.mag() > 0) {
-                G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
-                manager->FillH1(manager->GetH1Id("IntraModuleDeviation"), deviation);
-            }
-        }
+        // postVolume is the volume the particle is entering and preStepPoint->GetMomentum() is the momentum at entry to postVolume
+        // preVolume is the volume the particle is exiting (or nullptr if none) and postStepPoint->GetMomentum() is the momentum at exit from preVolume (or same as entry if no step inside)
+        bool isEnteringScint = (!preVolume || preVolume->GetName() != "Scintillator");
 
-        // Deviation BETWEEN front and back modules (Inter-Module)
-        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
+        if (isEnteringScint) {
+            // --- Intra-Module Entry ---
+            // Store momentum for the specific scintillator copy number
+            G4int copyNumber = postVolume->GetCopyNo();
+            fEventAction->StoreIntraModuleMomentum(track, copyNumber, preStepPoint->GetMomentum());
+
+            // --- Inter-Module Entry ---
             bool isFront = (copyNumber >= 0 && copyNumber < 100) || (copyNumber >= 200 && copyNumber < 300);
             bool isBack = (copyNumber >= 100 && copyNumber < 200) || (copyNumber >= 300 && copyNumber < 400);
 
             if (isFront) {
-                fEventAction->StoreInterModuleMomentum(track, preStepPoint->GetMomentum());
+                // Only store the momentum if it's the FIRST time entering a front module
+                // zero momentum means it's the first entry and should be stored (preStepPoint->GetMomentum() is the entry momentum)
+                if (fEventAction->GetInterModuleMomentum(track).mag() == 0.) {
+                    fEventAction->StoreInterModuleMomentum(track, preStepPoint->GetMomentum());
+                }
             }
             else if (isBack) {
+                // If entering a back module, we could also check if there's a stored front momentum
                 G4ThreeVector frontMomentum = fEventAction->GetInterModuleMomentum(track);
                 if (frontMomentum.mag() > 0) {
+                    // if there's a valid front momentum, calculate deviation between frontMomentum and current momentum on the back module entry. 
                     G4double deviation = frontMomentum.angle(preStepPoint->GetMomentum()) / deg;
                     manager->FillH1(manager->GetH1Id("InterModuleDeviation"), deviation);
                 }
             }
         }
     }
+    
+    if (preVolume && preVolume->GetName() == "Scintillator")
+    {
+        bool isExitingScint = (!postVolume || postVolume->GetName() != "Scintillator");
+
+        if (isExitingScint) {
+            // --- Intra-Module Exit ---
+            G4int copyNumber = preVolume->GetCopyNo();
+            G4ThreeVector entryMomentum = fEventAction->GetIntraModuleMomentum(track, copyNumber);
+            if (entryMomentum.mag() > 0) {
+                // Calculate deviation between entryMomentum and current momentum on exit from the scintillator
+                G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
+                manager->FillH1(manager->GetH1Id("IntraModuleDeviation"), deviation);
+                // Optional: Clear the stored momentum for this track/copy number pair
+                fEventAction->ClearIntraModuleMomentum(track, copyNumber);
+            }
+        }
+    }
+
 
     // --- SEPARATE Logic for the SINGLE SCINTILLATOR setup ---
-    if (volumeName == "OneScintillator1")
+    // This logic is more robust when written to explicitly check for transitions
+    if (postVolume && postVolume->GetName() == "OneScintillator1" && preVolume->GetName() != "OneScintillator1")
     {
-        // Check if particle is ENTERING the volume
-        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
-            fEventAction->StoreSingleScintMomentum(trackID, preStepPoint->GetMomentum());
-        }
-        // Check if particle is EXITING the volume
-        if (postStepPoint->GetStepStatus() == fGeomBoundary) {
-            G4ThreeVector entryMomentum = fEventAction->GetSingleScintMomentum(trackID);
-            if (entryMomentum.mag() > 0) {
-                G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
-                manager->FillH1(manager->GetH1Id("SingleScintDeviation"), deviation);
-            }
+        // Particle is ENTERING the volume
+        fEventAction->StoreSingleScintMomentum(trackID, preStepPoint->GetMomentum());
+    }
+    if (preVolume && preVolume->GetName() == "OneScintillator1" && (!postVolume || postVolume->GetName() != "OneScintillator1"))
+    {
+        // Particle is EXITING the volume
+        G4ThreeVector entryMomentum = fEventAction->GetSingleScintMomentum(trackID);
+        if (entryMomentum.mag() > 0) {
+            G4double deviation = entryMomentum.angle(postStepPoint->GetMomentum()) / deg;
+            manager->FillH1(manager->GetH1Id("SingleScintDeviation"), deviation);
         }
     }
 
     // --- Logic for the TWO BACK-TO-BACK SCINTILLATORS setup ---
-    if (volumeName == "OneScintillator1" || volumeName == "OneScintillator2")
+    // This logic also benefits from being more explicit
+    if (postVolume && postVolume->GetName() == "OneScintillator1" && preVolume->GetName() != "OneScintillator1")
     {
-        if (preStepPoint->GetStepStatus() == fGeomBoundary) {
-            if (volumeName == "OneScintillator1") {
-                fEventAction->StoreB2BFrontMomentum(trackID, preStepPoint->GetMomentum());
-            }
-            else if (volumeName == "OneScintillator2") {
-                G4ThreeVector frontMomentum = fEventAction->GetB2BFrontMomentum(trackID);
-                if (frontMomentum.mag() > 0) {
-                    G4double deviation = frontMomentum.angle(preStepPoint->GetMomentum()) / deg;
-                    manager->FillH1(manager->GetH1Id("TwoScintB2BDeviation"), deviation);
-                }
-            }
+        // Entering the front scintillator
+        fEventAction->StoreB2BFrontMomentum(trackID, preStepPoint->GetMomentum());
+    }
+    if (postVolume && postVolume->GetName() == "OneScintillator2" && preVolume->GetName() == "OneScintillator1")
+    {
+        // Entering the back scintillator FROM the front one
+        G4ThreeVector frontMomentum = fEventAction->GetB2BFrontMomentum(trackID);
+        if (frontMomentum.mag() > 0) {
+            G4double deviation = frontMomentum.angle(preStepPoint->GetMomentum()) / deg;
+            manager->FillH1(manager->GetH1Id("TwoScintB2BDeviation"), deviation);
         }
     }
-
     // ==============================================================================
 
     G4ThreeVector posPre  = preStepPoint->GetPosition();

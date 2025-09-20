@@ -17,13 +17,13 @@ G4bool overlapCheck = true;
 // Toggle these to select the setup you want
 bool useSTLGeometry = false;
 bool useFourModuleSetup = false;
-bool useFourModuleSetupNewFEE = true;
-bool useTestScintillator = false;
+bool useFourModuleSetupNewFEE = false;
+bool useTestScintillator = true;
 bool useTestModulesSetup = false;
 bool useTwoScinB2B = false;
 bool useOneModule = false;
 bool useTwoB2BModules = false;
-bool useMoireGratingSetup = true;
+bool useMoireGratingSetup = false;
 
 
 MyDetectorConstruction::MyDetectorConstruction() {}
@@ -196,8 +196,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     // --- Four Module Setup (Modified with new FEE) ---
     if (useFourModuleSetupNewFEE) {
         cout << "GeoConstruction: Using four module setup with new FEE" << endl;
-        G4double scinHalfX = 2.5*cm / 2.0;
-        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        // G4double scinHalfX = 2.5*cm / 2.0;
+        G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
