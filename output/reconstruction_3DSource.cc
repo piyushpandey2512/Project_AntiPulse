@@ -262,7 +262,7 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
 
 // --- Main Program ---
 int main() {
-    std::ifstream inFile("../build/PionInteractions_20250917_172011.dat");
+    std::ifstream inFile("../build/PionInteractions_20250924_094041.dat");
     if (!inFile) { std::cerr << "Error: Could not open input file.\n"; return 1; }
     
     const TVector3 stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
@@ -282,7 +282,7 @@ int main() {
     TH3D* h3_vertex = new TH3D("h3_extrap_vertex", "Extrapolated Vertex Origins;X (cm);Y (cm);Z (cm)",
                             50, -12.0, -4.0, 
                             50, -2.0, 8.0, 
-                            101, -65.0, 65.0);
+                            101, -65.6, 65.6);
     std::unordered_map<long long, std::vector<Hit>> events;
     std::string line;
     std::cout << "Reading and parsing data file...\n";

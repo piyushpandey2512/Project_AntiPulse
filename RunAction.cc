@@ -100,7 +100,7 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH3("SourceXYZDistribution", "Primary Particle Source Position;X (cm);Y (cm);Z (cm)",
                   50, -12.0, -4.0,    // X-axis: 50 manager->CreateH1("SourceIDHist", "Source ID", 3, 0.5, 3.5); // Histogram for source IDs 1, 2, 3bins from -12 cm to -4 cm
                   50,  0.0,  7.0,     // Y-axis: 50 bins from 0 cm to 7 cm
-                  101, -60.6, 60.6);   // Z-axis: 100 bins from -60 cm to 60 cm
+                  101, -50.5, 50.5);   // Z-axis: 100 bins from -60 cm to 60 cm
 
     CreateHistogramWithTitles(manager, "ScintillatorHits", "Scintillator Copy Numbers (Copy Number)", 400, 0, 400);
     CreateHistogramWithTitles(manager, "PionEnergyDep", "Energy Deposition by Pions (MeV)", 100, 0, 10);
@@ -108,8 +108,8 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     manager->CreateH2("Edep2DByProcess", "Energy Deposition by Process;Process Index;Edep (MeV)",
                     13, 0, 13,    // 13 process types, bins 0-12
                     100, 0, 10);  // 0-10 MeV, 100 bins
-    manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 50, 0., 25.);
-    manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 50, 0., 25.);
+    manager->CreateH1("IntraModuleDeviation", "Intra-module angular deviation;Deviation (deg);Counts", 40, 0., 2.0);
+    manager->CreateH1("InterModuleDeviation", "Inter-module angular deviation;Deviation (deg);Counts", 40, 0., 2.0);
     manager->CreateH1("SingleScintDeviation", "Angular Deviation in Test Scintillator;Angle (degrees);Counts", 40, 0, 2.0);
     manager->CreateH1("TwoScintB2BDeviation", "Angular Deviation Between B2B Scintillators;Angle (degrees);Counts", 50, 0., 25.);
     manager->CreateH1("SourceIDHist", "Source ID", 3, -0.5, 2.5); // Histogram for source IDs 1, 2, 3
@@ -131,22 +131,22 @@ void MyRunAction::EndOfRunAction(const G4Run* run)
         fPionFile.close();
     }
 
-    // =======================================================================
-    // --- PRINT THE FINAL REPORT ---
-    // G4int nofEvents = run->GetNumberOfEvent();
-    // if (nofEvents > 0) {
-    //     G4cout << "\n-------------------- Grating Analysis Summary --------------------\n"
-    //            << " Total Events Processed: " << nofEvents << "\n"
-    //            << "--------------------------------------------------------------\n"
-    //            << " Primary particles absorbed by Grating 1 wall: " << fAbsorbedG1Counter << "\n"
-    //            << " Primary particles absorbed by Grating 2 wall: " << fAbsorbedG2Counter << "\n"
-    //            << " --- \n"
-    //            << " Primary particles that passed through Grating 1 opening: " << fPassedG1Counter << "\n"
-    //            << " Primary particles that passed through G1 AND G2 openings: " << fPassedG2Counter << "\n"
-    //            << " Primary particles that passed through G1, G2, AND hit the Counter: " << fHitCounterCounter << "\n"
-    //            << "--------------------------------------------------------------\n"
-    //            << G4endl;
-    // }
+    /*=======================================================================
+    --- PRINT THE FINAL REPORT --- */
+    G4int nofEvents = run->GetNumberOfEvent();
+    if (nofEvents > 0) {
+        G4cout << "\n-------------------- Grating Analysis Summary --------------------\n"
+               << " Total Events Processed: " << nofEvents << "\n"
+               << "--------------------------------------------------------------\n"
+               << " Primary particles absorbed by Grating 1 wall: " << fAbsorbedG1Counter << "\n"
+               << " Primary particles absorbed by Grating 2 wall: " << fAbsorbedG2Counter << "\n"
+               << " --- \n"
+               << " Primary particles that passed through Grating 1 opening: " << fPassedG1Counter << "\n"
+               << " Primary particles that passed through G1 AND G2 openings: " << fPassedG2Counter << "\n"
+               << " Primary particles that passed through G1, G2, AND hit the Counter: " << fHitCounterCounter << "\n"
+               << "--------------------------------------------------------------\n"
+               << G4endl;
+    }
 }
 
 void MyRunAction::SetOutputFileName(const G4String& fileName)

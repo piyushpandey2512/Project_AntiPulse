@@ -2,9 +2,9 @@ void compareEnergyDeps() {
     // Load your specific ROOT files
 
 
-    // TFile *f_orig = TFile::Open("Project_AntiPulse_20250702_152407_OriginalWidth_singleScin.root");
-    // TFile *f_double = TFile::Open("Project_AntiPulse_20250702_154137_DoubleWidth_singleScin.root");
-    // TFile *f_half = TFile::Open("Project_AntiPulse_20250702_160346_HalfWidth_singleScin.root");
+    // TFile *f_orig = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250924_143023_SS_OW.root");
+    // TFile *f_double = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250924_140858_SS_DW.root");
+    // TFile *f_half = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250924_141919_SS_HW.root");
 
     // TFile *f_orig = TFile::Open("Project_AntiPulse_20250703_131704_1Cr_1FullModule__OriginalWidth.root");
     // TFile *f_double = TFile::Open("Project_AntiPulse_20250703_145434_1Cr_1FullModule__DoubleWidth.root");
@@ -18,9 +18,9 @@ void compareEnergyDeps() {
     // TFile *f_double = TFile::Open("Project_AntiPulse_20250731_171314_50lac_Two_B2B_modules_Double_width.root");
     // TFile *f_half = TFile::Open("Project_AntiPulse_20250731_174323_50lac_Two_B2B_modules_Half_width.root");
 
-    TFile *f_orig = TFile::Open("/scintillator_testing/Project_AntiPulse_20250919_132605_FullModule_OW.root");
-    TFile *f_double = TFile::Open("/scintillator_testing/Project_AntiPulse_20250919_133644_FullModule_DW.root");
-    TFile *f_half = TFile::Open("/scintillator_testing/Project_AntiPulse_20250919_135130_FullModule_HW.root");
+    TFile *f_orig = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250921_194247_FM_OW.root");
+    TFile *f_double = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250921_195224_FM_DW.root");
+    TFile *f_half = TFile::Open("/home/piyush/Desktop/PhD_Work/Trento_Project/Project_AntiPulse/output/scintillator_testing/Project_AntiPulse_20250921_200503_FM_HW.root");
 
 
 
@@ -39,15 +39,15 @@ void compareEnergyDeps() {
     h_double->SetLineColor(kBlue);
     h_half->SetLineColor(kGreen);
 
-    h_orig->SetLineWidth(2);
-    h_double->SetLineWidth(2);
-    h_half->SetLineWidth(2);
+    h_orig->SetLineWidth(5);
+    h_double->SetLineWidth(5);
+    h_half->SetLineWidth(5);
 
-    // h_orig->SetTitle("PionEnergyDep For 1Scintillator (Normalized);Deposited Energy (MeV);Normalized Counts");
+    h_orig->SetTitle("PionEnergyDep (Normalized) for Single Scintillator;Deposited Energy (MeV);Normalized Counts");
     // h_orig->SetTitle("PionEnergyDep For 1FullModule (Normalized);Deposited Energy (MeV);Normalized Counts");
     // h_orig->SetTitle("PionEnergyDep For 2B2B Scintillator (Normalized);Deposited Energy (MeV);Normalized Counts"); 
     // h_orig->SetTitle("PionEnergyDep For 2B2B Modules (Normalized);Deposited Energy (MeV);Normalized Counts");
-    h_orig->SetTitle("PionEnergyDep For 4FullModules (Normalized);Deposited Energy (MeV);Normalized Counts");
+    // h_orig->SetTitle("PionEnergyDep (Normalized) for Four Modules ;Deposited Energy (MeV);Normalized Counts");
 
 
     // Compute global Y max for scaling
@@ -71,9 +71,9 @@ void compareEnergyDeps() {
 
     // Legend
     TLegend *leg = new TLegend(0.65, 0.7, 0.88, 0.88);
-    leg->AddEntry(h_orig, "OriginalWidth (2.5 cm)", "l");
-    leg->AddEntry(h_double, "DoubleWidth (5.0 cm)", "l");
-    leg->AddEntry(h_half, "HalfWidth (1.25 cm)", "l");
+    leg->AddEntry(h_orig, "OriginalWidth (2.4 cm)", "l");
+    leg->AddEntry(h_double, "DoubleWidth (4.8 cm)", "l");
+    leg->AddEntry(h_half, "HalfWidth (1.2 cm)", "l");
     leg->Draw();
 
     // TLine *l1 = new TLine(2.254, 0, 2.254, 0.139);
@@ -107,7 +107,7 @@ void compareEnergyDeps() {
     arr1->SetLineColor(kBlack);
     arr1->SetFillColor(kBlack);
     arr1->Draw();
-    TLatex *t1 = new TLatex(5.05, 0.04, "4.65 MeV");
+    TLatex *t1 = new TLatex(5.05, 0.04, "4.54 MeV");
     t1->SetTextSize(0.03);
     t1->Draw();
 
@@ -123,13 +123,19 @@ void compareEnergyDeps() {
     t2->Draw();
 
     // Arrow 3
-    TArrow *arr3 = new TArrow(2.25, 0.11, 2.7, 0.11, 0.02, "<|");
+    double x_arrow = 2.34;
+    int bin = h_orig->FindBin(x_arrow);
+    double y_arrow = h_orig->GetBinContent(bin);
+
+    // Add a small offset if you want the arrow above the bin
+    TArrow *arr3 = new TArrow(x_arrow, y_arrow, x_arrow + 0.45, y_arrow, 0.02, "<|");
     arr3->SetLineWidth(2);
     arr3->SetArrowSize(0.02);
     arr3->SetLineColor(kBlack);
     arr3->SetFillColor(kBlack);
     arr3->Draw();
-    TLatex *t3 = new TLatex(2.75, 0.11, "2.25 MeV");
+
+    TLatex *t3 = new TLatex(x_arrow + 0.5, y_arrow, "2.25 MeV");
     t3->SetTextSize(0.03);
     t3->Draw();
 

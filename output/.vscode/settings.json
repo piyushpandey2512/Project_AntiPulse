@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "AntiProton.C": "cpp",
+        "compareEnergyDeps.C": "cpp"
+    }
+}

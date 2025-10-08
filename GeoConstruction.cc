@@ -16,14 +16,13 @@ G4bool overlapCheck = true;
 
 // Toggle these to select the setup you want
 bool useSTLGeometry = false;
-bool useFourModuleSetup = false;
-bool useFourModuleSetupNewFEE = false;
-bool useTestScintillator = true;
+bool useFourModuleSetupNewFEE = true;
+bool useTestScintillator = false;
 bool useTestModulesSetup = false;
 bool useTwoScinB2B = false;
 bool useOneModule = false;
 bool useTwoB2BModules = false;
-bool useMoireGratingSetup = false;
+bool useMoireGratingSetup = true;
 
 
 MyDetectorConstruction::MyDetectorConstruction() {}
@@ -55,50 +54,16 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         cadMesh->SetReverse(false);
 
         G4VSolid *stlSolid = cadMesh->TessellatedMesh();
-        G4VisAttributes* gray = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));
+        // G4VisAttributes* gray = new G4VisAttributes(G4Colour(0.5, 0.5, 0.5));
+        // Change the color to a bright yellow
+        G4VisAttributes* visAttributes = new G4VisAttributes(G4Colour(1.0, 1.0, 0.0));
         G4LogicalVolume* stlLogical = new G4LogicalVolume(stlSolid, mat304steel, "STLVolume");
-        stlLogical->SetVisAttributes(gray);
+        stlLogical->SetVisAttributes(visAttributes);
 
         G4RotationMatrix* rotation = new G4RotationMatrix();
         rotation->rotateX(90.0*deg);
         G4ThreeVector stlPosition(-8.0*cm, 3.5*cm, 8.0*cm);
         new G4PVPlacement(rotation, stlPosition, stlLogical, "STLVolume", wLogic, false, 0, overlapCheck);
-    }
-
-
-
-/*****************************************************************************************************************************/
-    // --- Four Module Setup ---
-    if (useFourModuleSetup) {
-        cout << "GeoConstruction: Using four module setup" << endl;
-        G4double scinHalfX = 2.5*cm / 2.0;
-        G4double scinHalfY = 0.6*cm / 2.0;
-        G4double scinHalfZ = 50.0*cm / 2.0;
-
-        G4Box* scinBox = new G4Box("ScintillatorBox", scinHalfX, scinHalfY, scinHalfZ);
-        fScintLogical = new G4LogicalVolume(scinBox, fScinMaterial, "ScintillatorLV");
-        fScintLogical->SetVisAttributes(visAttScin);
-
-        G4double gap = 0.1*cm;
-        G4double fullScinY = 2*scinHalfY;
-        G4double moduleTotalY = 13*(fullScinY + gap) - gap;
-        G4double moduleHalfY = moduleTotalY/2.0;
-
-        std::vector<G4ThreeVector> modulePositions = {
-            G4ThreeVector(15.8*cm, 0, 45*cm),
-            G4ThreeVector(23.8*cm, 0, 45*cm),
-            G4ThreeVector(15.8*cm, 0, -45*cm),
-            G4ThreeVector(23.8*cm, 0, -45*cm)
-        };
-
-        for (size_t m = 0; m < modulePositions.size(); m++) {
-            G4ThreeVector modCenter = modulePositions[m];
-            for (G4int j = 0; j < 13; j++) {
-                G4double localY = -moduleHalfY + scinHalfY + j * (fullScinY + gap);
-                G4ThreeVector scintPos = modCenter + G4ThreeVector(0, localY, 0);
-                new G4PVPlacement(0, scintPos, fScintLogical, "Scintillator", wLogic, false, m*100 + j, overlapCheck);
-            }
-        }
     }
 
 
@@ -161,7 +126,7 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
  // =======================================================================
         // --- MODIFICATION: Create a THICK Solid Counter Detector ---
         // We make it 10 cm thick along the Z-axis to act as a beam dump.
-        G4double counter_halfZ = 10.0 * cm / 2.0;
+        G4double counter_halfZ = 5.0 * cm / 2.0;
         G4Box* solidCounter_box = new G4Box("SolidCounterBox", grating_halfX, grating_halfY, counter_halfZ);
         fSolidCounterLogical = new G4LogicalVolume(solidCounter_box, fSiMaterial, "SolidCounterLog");
 
@@ -175,7 +140,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         G4ThreeVector stlPosition(0.1*cm, 0.0*cm, 0.55*cm);
         G4ThreeVector center_grating1 = stlPosition;
         G4ThreeVector center_grating2 = stlPosition + G4ThreeVector(0, 0, -45*cm);
-        
+        G4ThreeVector center_grating3 = stlPosition + G4ThreeVector(0, 0, 45*cm);
+
         // Adjust the counter's Z position to account for its new thickness
         G4ThreeVector center_counter  = stlPosition + G4ThreeVector(0, 0, 45*cm + counter_halfZ);
 
@@ -185,6 +151,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
         
         // Place the second grating (at Z=-45) with copy number 2
         new G4PVPlacement(0, center_grating2, gratingMother_log, "MoireGrating", wLogic, false, 2, true);
+
+        // Place the third grating (at Z=+45) with copy number 3
+        // new G4PVPlacement(0, center_grating3, gratingMother_log, "MoireGrating", wLogic, false, 3, true);
         
         // Place the SOLID COUNTER (at Z=+45) with copy number 3
         new G4PVPlacement(0, center_counter, fSolidCounterLogical, "SolidCounter", wLogic, false, 3, true);
@@ -196,8 +165,8 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     // --- Four Module Setup (Modified with new FEE) ---
     if (useFourModuleSetupNewFEE) {
         cout << "GeoConstruction: Using four module setup with new FEE" << endl;
-        // G4double scinHalfX = 2.5*cm / 2.0;
-        G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
+        G4double scinHalfX = 2.5*cm / 2.0;
+        // G4double scinHalfX = 2.5*cm; /// test for energy deposition with double width
         // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
@@ -233,9 +202,9 @@ G4VPhysicalVolume* MyDetectorConstruction::Construct()
     // --- Single Test Scintillator ---
     if (useTestScintillator) {
         cout << "GeoConstruction: Using single test scintillator" << endl;
-        // G4double scinHalfX = 2.5*cm / 2.0;
+        G4double scinHalfX = 2.5*cm / 2.0;
         // G4double scinHalfX = 2.5*cm; // test for energy deposition with double width
-        G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
+        // G4double scinHalfX = 1.25*cm / 2.0; // test for energy deposition with half width
         G4double scinHalfY = 0.6*cm / 2.0;
         G4double scinHalfZ = 50.0*cm / 2.0;
 

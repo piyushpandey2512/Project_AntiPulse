@@ -9,13 +9,13 @@ using namespace std;
 
 // Add these as class members in PrimaryGenerator.hh or as static/global for quick testing
 bool useThreeSourceCone = false;
-bool useConeSourceTowardScintillator = true;
+bool useConeSourceTowardScintillator = false;
 bool useTestSingleSource = false;
 bool useConeSourceTowardSingleModule = false;
 bool useConeSourceTowardFourModules = false;
 
 // Antiproton beam options
-bool useAntiprotonBeamParallel = false;
+bool useAntiprotonBeamParallel = true;
 bool useAntiprotonBeamRandomAiming = false;
 
 // Moire Source Options
