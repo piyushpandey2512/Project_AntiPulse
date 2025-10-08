@@ -239,6 +239,7 @@ std::pair<TVector3, TVector3> getTrack(const Hit& frontHit, const Hit& backHit) 
 }
 
 // --- CORRECTED EXTRAPOLATION FUNCTION ---
+
 std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVector3& trackDir, const SourceBox& box) {
     double xmin = box.center.X() - box.halfWidthX, xmax = box.center.X() + box.halfWidthX;
     double ymin = box.center.Y() - box.halfWidthY, ymax = box.center.Y() + box.halfWidthY;
@@ -315,11 +316,14 @@ int main() {
     inFile.close();
     std::cout << "Finished reading file. " << events.size() << " events found.\n";
 
+    // --- RECONSTRUCTION LOGIC ---
     int vertexCount = 0;
     std::cout << "Finding tracks and extrapolating to source...\n";
     for (const auto& [current_eventID, all_hits_in_event] : events) {
         std::unordered_map<int, std::vector<Hit>> tracks_in_event;
-        for (const auto& hit : all_hits_in_event) { tracks_in_event[hit.trackID].push_back(hit); }
+        for (const auto& hit : all_hits_in_event) { 
+            tracks_in_event[hit.trackID].push_back(hit); 
+        }
 
         for (const auto& [current_trackID, hits_for_this_track] : tracks_in_event) {
             if (hits_for_this_track.size() < 2) continue;
