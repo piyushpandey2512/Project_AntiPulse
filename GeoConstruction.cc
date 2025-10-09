@@ -22,7 +22,7 @@ bool useTestModulesSetup = false;
 bool useTwoScinB2B = false;
 bool useOneModule = false;
 bool useTwoB2BModules = false;
-bool useMoireGratingSetup = true;
+bool useMoireGratingSetup = false;
 
 
 MyDetectorConstruction::MyDetectorConstruction() {}

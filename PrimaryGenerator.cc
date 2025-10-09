@@ -15,11 +15,11 @@ bool useConeSourceTowardSingleModule = false;
 bool useConeSourceTowardFourModules = false;
 
 // Antiproton beam options
-bool useAntiprotonBeamParallel = true;
+bool useAntiprotonBeamParallel = false;
 bool useAntiprotonBeamRandomAiming = false;
 
 // Moire Source Options
-bool useMoireSourceUniform = false;
+bool useMoireSourceUniform = true;
 bool useMoireSourceDiagnostic = false;
 bool useMoireSourceGaussian = false;
 bool useMoireSourceRandomSource = false;
@@ -627,7 +627,7 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         // --- MODIFICATION: Get the Analysis Manager ---
         // Get the singleton instance of the G4AnalysisManager
         auto analysisManager = G4AnalysisManager::Instance();
-
+        int nPrimariesThisEvent = 0;
 
     // Loop over each of the three source locations
     for (const auto& sourceCenter : sourcePositions) {
@@ -709,12 +709,15 @@ void MyPrimaryParticles::GeneratePrimaries(G4Event* anEvent)
         fParticleGun->SetParticleEnergy(energy);
         
         fParticleGun->GeneratePrimaryVertex(anEvent);
+        nPrimariesThisEvent++;
         }
-    }
+        int h1id = analysisManager->GetH1Id("PrimaryCount");
+        analysisManager->FillH1(h1id, nPrimariesThisEvent);
+
+}
 
 
 /***********************************************************************/
-
     if (useMoireSourceGaussian) {
     G4ThreeVector stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
 

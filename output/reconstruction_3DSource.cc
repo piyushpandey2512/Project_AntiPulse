@@ -215,6 +215,7 @@ struct Hit {
     int       trackID;
     int       copyNo;
     TVector3  position;
+    double    time;
 };
 
 struct SourceBox {
@@ -285,6 +286,7 @@ int main() {
     std::ifstream inFile("../build/imp_files/PionInteractions_20250924_094041_1Cr_FM_OW.dat");
     if (!inFile) { std::cerr << "Error: Could not open input file.\n"; return 1; }
     
+    std::vector<double> velocities;
     const TVector3 stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
     const double reconBoxHalfX = 5.0 * cm; 
     const double reconBoxHalfY = 5.0 * cm; 
@@ -311,7 +313,9 @@ int main() {
         std::istringstream iss(line); Hit hit;
         std::string p, n, v, io; double x,y,z; long long pid,sid; double t,e,px,py,pz;
         if (!(iss>>hit.eventID>>pid>>sid>>hit.trackID>>p>>n>>v>>hit.copyNo>>io>>x>>y>>z>>t>>e>>px>>py>>pz)) continue;
-        if (io == "in") { hit.position=TVector3(x,y,z); events[hit.eventID].push_back(hit); }
+        // Only use pions and kaons for reconstruction
+        if (p != "pi+" && p != "pi-" && p != "pi0" && p != "kaon+" && p != "kaon-") continue;
+        if (io == "in") { hit.position=TVector3(x,y,z); hit.time = t; events[hit.eventID].push_back(hit); }
     }
     inFile.close();
     std::cout << "Finished reading file. " << events.size() << " events found.\n";
@@ -335,6 +339,21 @@ int main() {
                 if (isRightFront(hit.copyNo)) rightFrontHit = hit;
                 if (isRightBack(hit.copyNo))  rightBackHit = hit;
             }
+
+                // --- Velocity calculation ---
+            double velocity = -1;
+            if (leftFrontHit && leftBackHit) {
+                double dt = leftBackHit->time - leftFrontHit->time;
+                double dx = (leftBackHit->position - leftFrontHit->position).Mag();
+                if (dt > 0) velocity = dx / dt; // cm/ns
+            } else if (rightFrontHit && rightBackHit) {
+                double dt = rightBackHit->time - rightFrontHit->time;
+                double dx = (rightBackHit->position - rightFrontHit->position).Mag();
+                if (dt > 0) velocity = dx / dt; // cm/ns
+            }
+
+    // Store velocities for histogram
+    if (velocity > 0) velocities.push_back(velocity);
             
             std::optional<TVector3> found_vertex;
 
@@ -358,15 +377,27 @@ int main() {
                 tree->Fill();
                 h3_vertex->Fill(vx, vy, vz);
                 vertexCount++;
+                recoCountPerEvent[current_eventID]++;
             }
          }
     }
+
+    // Write recoCountPerEvent to file for ROOT macro
+    std::ofstream recoFile("RecoCountPerEvent.txt");
+    for (const auto& [evt, count] : recoCountPerEvent) {
+        recoFile << evt << " " << count << "\n";
+    }
+    recoFile.close();
     
     std::cout << "Track extrapolation completed.\n";
     std::cout << "Total extrapolated vertices found: " << vertexCount << "\n";
     outFile->cd();
     tree->Write();
     h3_vertex->Write();
+
+    TH1D* h_velocity = new TH1D("h_velocity", "Track Velocity Distribution;Velocity (cm/ns);Counts", 100, 0, 30);
+    for (double v : velocities) h_velocity->Fill(v);
+    h_velocity->Write();
     outFile->Close();
     delete outFile;
 

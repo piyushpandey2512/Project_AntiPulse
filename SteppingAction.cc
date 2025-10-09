@@ -76,6 +76,12 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4int trackID = track->GetTrackID();
     G4String particleName = track->GetDefinition()->GetParticleName();
 
+    // Only process pions and kaons
+    if (particleName != "pi+" && particleName != "pi-" && particleName != "pi0" &&
+        particleName != "kaon+" && particleName != "kaon-") {
+        return; // Skip all other particles
+    }
+
 // ==============================================================================
     // --- NEW, CORRECTED LOGIC FOR ALL ANGULAR DEVIATION HISTOGRAMS ---
     // ==============================================================================

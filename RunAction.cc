@@ -118,6 +118,7 @@ void MyRunAction::BeginOfRunAction(const G4Run*)
     // --- ADD HISTOGRAMS FOR GRATING INTERACTION COUNTS ---
     manager->CreateH1("GratingInteractions", "Grating Interactions;Type;Counts",
                       6, 0, 6);
+    manager->CreateH1("PrimaryCount", "Number of Primary Particles per Event", 10, 0, 10);    
 
 }
 
