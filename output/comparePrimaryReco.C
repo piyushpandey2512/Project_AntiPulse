@@ -1,6 +1,6 @@
 void compare_primary_reco() {
     // Load primary counts from ROOT file
-    TFile *f = TFile::Open("Project_AntiPulse_output.root"); // Change to your output file
+    TFile *f = TFile::Open("../build/Project_AntiPulse_20251009_130508.root"); // Change to your output file
     TH1 *h_primary = (TH1*)f->Get("PrimaryCount");
 
     // Load reconstructed counts from text file

@@ -77,8 +77,13 @@ void MySteppingAction::UserSteppingAction(const G4Step* step)
     G4String particleName = track->GetDefinition()->GetParticleName();
 
     // Only process pions and kaons
-    if (particleName != "pi+" && particleName != "pi-" && particleName != "pi0" &&
-        particleName != "kaon+" && particleName != "kaon-") {
+    // if (particleName != "pi+" && particleName != "pi-" && particleName != "pi0" &&
+    //     particleName != "kaon+" && particleName != "kaon-") {
+    //     return; // Skip all other particles
+    // }
+
+    // Only pi+
+    if (particleName != "pi+") {
         return; // Skip all other particles
     }
 
