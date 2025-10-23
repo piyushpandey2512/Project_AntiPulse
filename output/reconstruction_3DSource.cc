@@ -94,8 +94,8 @@ std::optional<TVector3> extrapolateToBox(const TVector3& trackPoint, const TVect
 
 // --- Toggle switches ---
 bool useMoireGratingReco = false;
-bool useMoireSourceReco  = false;
-bool useTestReco         = true;
+bool useMoireSourceReco  = true;
+bool useTestReco         = false;
 
 // --- Main Program ---
 int main() {
@@ -191,7 +191,7 @@ int main() {
 /**************************************************************************************************************/
 
     if (useMoireSourceReco) {
-        std::ifstream inFile("../build/PionInteractions_20251009_130508.dat");
+        std::ifstream inFile("../build/PionInteractions_20251023_122607_onlyPi+.dat");
         if (!inFile) { std::cerr << "Error: Could not open input file.\n"; return 1; }
 
         const TVector3 stlPosition(-8.0 * cm, 3.5 * cm, 0.0 * cm);
@@ -203,7 +203,7 @@ int main() {
         SourceBox rightBox  = {stlPosition + TVector3(0, 0, 45 * cm),  reconBoxHalfX, reconBoxHalfY, boxHalfZ};
         SourceBox leftBox   = {stlPosition + TVector3(0, 0, -45 * cm), reconBoxHalfX, reconBoxHalfY, boxHalfZ};
 
-        TFile* outFile = new TFile("ExtrapolatedVertices_FromGratings1.root", "RECREATE");
+        TFile* outFile = new TFile("ExtrapolatedVertices_onlyPi+.root", "RECREATE");
         TTree* tree = new TTree("ExtrapolatedVertexTree", "3D Extrapolated Track Origins");
         long long eventID; int trackID; double vx, vy, vz;
         tree->Branch("eventID", &eventID, "eventID/L"); tree->Branch("trackID", &trackID, "trackID/I");
